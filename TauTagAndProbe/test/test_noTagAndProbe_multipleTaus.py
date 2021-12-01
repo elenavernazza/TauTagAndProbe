@@ -24,7 +24,7 @@ options.register ('JSONfile',
                   "JSON file (empty for no JSON)")
 options.outputFile = 'NTuple.root'
 options.inputFiles = []
-options.maxEvents  = -999
+options.maxEvents  = 500
 options.parseArguments()
 
 if not isMC: # will use 80X
@@ -55,13 +55,13 @@ if not isMC: # will use 80X
         #eventsToProcess = cms.untracked.VEventRange('282092:1057805498')
     )
 else:
-    process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_2016_miniAODv2' #MC 25 ns miniAODv2
+    process.GlobalTag.globaltag = '112X_mcRun3_2021_realistic_v16' #MC 25 ns miniAODv2
     # process.GlobalTag.globaltag = '76X_dataRun2_16Dec2015_v0'
     process.load('TauTagAndProbe.TauTagAndProbe.MCanalysis_noTagAndProbe_multipleTaus_cff')
     process.source = cms.Source("PoolSource",
         fileNames = cms.untracked.vstring(
             
-            '/store/mc/RunIISpring16MiniAODv2/GluGluHToTauTau_M125_13TeV_powheg_pythia8/MINIAODSIM/FlatPU20to70HcalNZSRAW_withHLT_80X_mcRun2_asymptotic_v14-v1/50000/B0D22F36-9567-E611-A5FB-0CC47A4DEE76.root'
+            '/store/mc/Run3Winter21DRMiniAOD/VBFHHTo2B2Tau_CV_1_C2V_1_C3_1_TuneCP5_14TeV-madgraph-pythia8/MINIAODSIM/FlatPU30to80FEVT_112X_mcRun3_2021_realistic_v16-v2/250000/17069e32-1ace-4f1b-8ccd-423f4439ed25.root'
             #'file:B0D22F36-9567-E611-A5FB-0CC47A4DEE76.root'
             #'/store/mc/RunIIFall15MiniAODv2/GluGluToRadionToHHTo2B2Tau_M-700_narrow_13TeV-madgraph/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/60000/2CD9692A-9EB8-E511-A944-FACADE0000C9.root'
             #'/store/mc/RunIIFall15MiniAODv2/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/70000/02A85EE9-70BA-E511-A0A2-0CC47A4D7678.root',
