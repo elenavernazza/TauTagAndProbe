@@ -41,7 +41,7 @@ njobs = 200
 #filelist = open("fileList_Run2016H-PromptReco-v2_141116.txt")
 #filelist = open("fileList_Run2016H-PromptReco-v3_141116.txt")
 #filelist = open("fileList_Run2016H-PromptReco-v2_141116_Run282092.txt")
-filelist = open("VBFHToTauTau_M125_13TeV_powheg_pythia8_RunIISummer16MiniAODv2-FlatPU28to62HcalNZSRAW_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1.txt")
+filelist = open("VBF-EWKino_DemocraticSlepton_mChargino.txt")
 
 #filelist = open("fileList_MC_RECO.txt")
 #folder = "MC_RECO_9x9"
@@ -49,7 +49,7 @@ filelist = open("VBFHToTauTau_M125_13TeV_powheg_pythia8_RunIISummer16MiniAODv2-F
 #folder = "Certification_20Oct16"
 #folder = "Certification_27Oct16"
 
-folder = "MC_MiniAOD_multipleTaus_16_05_17"
+folder = "MC_MiniAOD_EWKino_DemocraticSlepton_mChargino_17_11_22"
 #folder = "Run2016H-PromptReco-v2_141116_282092_noBtagVeto"
 #folder = "Run2016H-PromptReco-v3_141116"
 #folder = "Run2016H-PromptReco-v2_141116"
@@ -102,6 +102,6 @@ for idx, block in enumerate(fileblocks):
     skimjob.close ()
 
     os.system ('chmod u+rwx ' + outJobName)
-    command = ('/opt/exp_soft/cms/t3/t3submit_new -long \'' + outJobName +"\'")
-    # print command
+    command = ('/opt/exp_soft/cms/t3/t3submit -long \'' + outJobName +"\'")
+    print command
     os.system (command)

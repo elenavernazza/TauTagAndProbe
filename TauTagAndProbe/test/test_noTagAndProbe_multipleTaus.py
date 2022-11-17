@@ -24,7 +24,8 @@ options.register ('JSONfile',
                   "JSON file (empty for no JSON)")
 options.outputFile = 'NTuple.root'
 options.inputFiles = []
-options.maxEvents  = -999
+# options.maxEvents  = -999
+options.maxEvents = 10
 options.parseArguments()
 
 if not isMC: # will use 80X
@@ -33,7 +34,7 @@ if not isMC: # will use 80X
     process.load('TauTagAndProbe.TauTagAndProbe.tagAndProbe_cff')
     process.source = cms.Source("PoolSource",
         fileNames = cms.untracked.vstring(
-            '/store/data/Run2016H/SingleMuon/MINIAOD/PromptReco-v2/000/282/092/00000/DE499C8E-1B8B-E611-8C93-02163E014207.root'
+            '/store/mc/RunIIAutumn18MiniAOD/VBF-EWKino_DemocraticSlepton_mChargino-100to150_TuneCP2_13TeV-madgraph-pythia8/MINIAODSIM/GridpackScan_102X_upgrade2018_realistic_v15-v1/110000/274F191D-1988-1243-B142-B969869EE78C.root'
             #'/store/data/Run2016H/SingleMuon/MINIAOD/PromptReco-v2/000/282/092/00000/ACA10D13-2D8B-E611-820E-FA163E8FD709.root'
             #'/store/data/Run2016H/SingleMuon/MINIAOD/PromptReco-v2/000/282/092/00000/20AE9A37-2D8B-E611-8405-02163E0119B8.root'
             #/store/data/Run2016H/SingleMuon/MINIAOD/PromptReco-v2/000/282/092/00000/1E61B437-358B-E611-91C5-02163E011AEE.root'
@@ -55,13 +56,13 @@ if not isMC: # will use 80X
         #eventsToProcess = cms.untracked.VEventRange('282092:1057805498')
     )
 else:
-    process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_2016_miniAODv2' #MC 25 ns miniAODv2
+    process.GlobalTag.globaltag = '102X_upgrade2018_realistic_v15' #MC 25 ns miniAODv2
     # process.GlobalTag.globaltag = '76X_dataRun2_16Dec2015_v0'
     process.load('TauTagAndProbe.TauTagAndProbe.MCanalysis_noTagAndProbe_multipleTaus_cff')
     process.source = cms.Source("PoolSource",
         fileNames = cms.untracked.vstring(
-            
-            '/store/mc/RunIISpring16MiniAODv2/GluGluHToTauTau_M125_13TeV_powheg_pythia8/MINIAODSIM/FlatPU20to70HcalNZSRAW_withHLT_80X_mcRun2_asymptotic_v14-v1/50000/B0D22F36-9567-E611-A5FB-0CC47A4DEE76.root'
+            '/store/mc/RunIIAutumn18MiniAOD/VBF-EWKino_DemocraticSlepton_mChargino-100to150_TuneCP2_13TeV-madgraph-pythia8/MINIAODSIM/GridpackScan_102X_upgrade2018_realistic_v15-v1/110000/274F191D-1988-1243-B142-B969869EE78C.root',
+            #'/store/mc/RunIISpring16MiniAODv2/GluGluHToTauTau_M125_13TeV_powheg_pythia8/MINIAODSIM/FlatPU20to70HcalNZSRAW_withHLT_80X_mcRun2_asymptotic_v14-v1/50000/B0D22F36-9567-E611-A5FB-0CC47A4DEE76.root'
             #'file:B0D22F36-9567-E611-A5FB-0CC47A4DEE76.root'
             #'/store/mc/RunIIFall15MiniAODv2/GluGluToRadionToHHTo2B2Tau_M-700_narrow_13TeV-madgraph/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/60000/2CD9692A-9EB8-E511-A944-FACADE0000C9.root'
             #'/store/mc/RunIIFall15MiniAODv2/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/70000/02A85EE9-70BA-E511-A0A2-0CC47A4D7678.root',

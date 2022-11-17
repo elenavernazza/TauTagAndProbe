@@ -53,7 +53,7 @@ bool genMatchTauFilter::filter(edm::Event & iEvent, edm::EventSetup const& iSetu
             resultTau->push_back (tau);
         }
     }
-    if (goodTaus == 0) return false;
+    // if (goodTaus == 0) return false;
     
     iEvent.put(std::move(resultTau));
 
