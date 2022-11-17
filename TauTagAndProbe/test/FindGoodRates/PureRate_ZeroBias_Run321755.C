@@ -41,7 +41,7 @@ void PureRate()
 
   cout << "Begin loop" << endl;
 
-  TString path = "/grid_mnt/data__data.polcms/cms/vernazza/CMSSW_10_3_1/src/TauTagAndProbe/TauTagAndProbe/test/Run3_MC_VBFHToTauTau_M125_RAW/";
+  TString path = "/grid_mnt/data__data.polcms/cms/vernazza/Ntuples/ZeroBias_Run321755/";
 
   vector <TH3F*> ptjet1_ptjet2_jetmass_ptmu;
   TH2F* PtJet1_PtJet2 = new TH2F("PtJet1_PtJet2", "PtJet1_PtJet2", bins[0], xmin[0], xmax[0], bins[1], xmin[1], xmax[1]);
@@ -99,7 +99,7 @@ void PureRate()
       inTree->SetBranchAddress("l1tEta", &in_l1tauEta);
       inTree->SetBranchAddress("l1tPhi", &in_l1tauPhi);
 
-      if (nt%50 == 0)
+      if (nt%10 == 0)
         {
           cout << "\nNumber of events in the Ntuple " << nt << " = " << inTree->GetEntries() << endl;
         }
@@ -263,7 +263,7 @@ void PureRate()
 
   // Compute 4D histogram, where at each combination of jetPt1, jetPt2, Mjj and muonPt corresponds a rate
 
-  THnF* purerates_4D = new THnF("purerates_4D","purerates_4D", 4, bins, xmin, xmax);
+  THnF* rates_4D = new THnF("rates_4D","rates_4D", 4, bins, xmin, xmax);
   float integral_xyzw = -1.;
   int combinations = 0;
 
@@ -296,7 +296,7 @@ void PureRate()
                     }
 
                   Int_t v_bin[4] = {i_bin_x, i_bin_y, i_bin_z, i_bin_w};
-                  purerates_4D->SetBinContent(v_bin, integral_xyzw);
+                  rates_4D->SetBinContent(v_bin, integral_xyzw);
 
                 }
             }
@@ -356,8 +356,8 @@ void PureRate()
   Tex3.DrawLatexNDC(0.25,0.96,"Zero Bias L1 rate M_{jj} > 420 GeV && p_{T}^{#mu} > 8 GeV");
   Tex3.Draw("same");
 
-  c_2D->SaveAs("rate_ptj1_X_ptj2_Y_mjj_420_ptmu_8.png");
-  c_2D->SaveAs("rate_ptj1_X_ptj2_Y_mjj_420_ptmu_8.pdf");
+  c_2D->SaveAs("pure_rate_2D_ptj1_X_ptj2_Y_mjj_420_ptmu_8.png");
+  c_2D->SaveAs("pure_rate_2D_ptj1_X_ptj2_Y_mjj_420_ptmu_8.pdf");
   c_2D->Close();
 
   // Compute 2D_rate with a fixed muonPt value and jetPt2 value 
@@ -411,23 +411,22 @@ void PureRate()
   Tex33.DrawLatexNDC(0.25,0.96,"Zero Bias L1 rate p_{T}^{jet2} > 30 GeV && p_{T}^{#mu} > 8 GeV");
   Tex33.Draw("same");
 
-  c_2D_1->SaveAs("rate_ptj1_X_ptj2_30_mjj_Y_ptmu_8.png");
-  c_2D_1->SaveAs("rate_ptj1_X_ptj2_30_mjj_Y_ptmu_8.pdf");
+  c_2D_1->SaveAs("pure_rate_2D_ptj1_X_ptj2_30_mjj_Y_ptmu_8.png");
+  c_2D_1->SaveAs("pure_rate_2D_ptj1_X_ptj2_30_mjj_Y_ptmu_8.pdf");
   c_2D_1->Close();
 
+  // TCanvas* c = new TCanvas("c","c",900.,700.);
+  // gPad->SetPad(0.0,0.0,1.0,1.0);
+  // PtJet1_PtJet2->SetStats(0);
+  // PtJet1_PtJet2->SetTitle("");
+  // PtJet1_PtJet2->Draw("COLZ");
+  // PtJet1_PtJet2->GetXaxis()->SetTitle("p_{T}^{j1} [GeV]");
+  // PtJet1_PtJet2->GetYaxis()->SetTitle("p_{T}^{j2} [GeV]");
+  // PtJet1_PtJet2->LabelsOption("v","Z");
 
-  TCanvas* c = new TCanvas("c","c",900.,700.);
-  gPad->SetPad(0.0,0.0,1.0,1.0);
-  PtJet1_PtJet2->SetStats(0);
-  PtJet1_PtJet2->SetTitle("");
-  PtJet1_PtJet2->Draw("COLZ");
-  PtJet1_PtJet2->GetXaxis()->SetTitle("p_{T}^{j1} [GeV]");
-  PtJet1_PtJet2->GetYaxis()->SetTitle("p_{T}^{j2} [GeV]");
-  PtJet1_PtJet2->LabelsOption("v","Z");
-
-  c->SaveAs("PtJet1_PtJet2.png");
-  c->SaveAs("PtJet1_PtJet2.pdf");
-  c->Close();
+  // c->SaveAs("PtJet1_PtJet2.png");
+  // c->SaveAs("PtJet1_PtJet2.pdf");
+  // c->Close();
 
   // --------------- End ---------------
 
@@ -440,10 +439,10 @@ void PureRate()
   for (Int_t m = 0; m < bins[3]; m++)
     {
       int num = xmin[3] + m;
-      TString canvname = Form("ptjet1_ptjet2_jetmass_ptmu_%d", num);
-      TString pngname = Form("ptjet1_ptjet2_jetmass_ptmu_%d.png", num);
-      TString pdfname = Form("ptjet1_ptjet2_jetmass_ptmu_%d.pdf", num);
-      TString rootname = Form("ptjet1_ptjet2_jetmass_ptmu_%d.root", num);
+      TString canvname = Form("pure_rate_3D_ptjet1_ptjet2_jetmass_ptmu_%d", num);
+      TString pngname = Form("pure_rate_3D_ptjet1_ptjet2_jetmass_ptmu_%d.png", num);
+      TString pdfname = Form("pure_rate_3D_ptjet1_ptjet2_jetmass_ptmu_%d.pdf", num);
+      TString rootname = Form("pure_rate_3D_ptjet1_ptjet2_jetmass_ptmu_%d.root", num);
       canvas_mu.at(m) = new TCanvas(canvname,canvname,900.,650.);
       ptjet1_ptjet2_jetmass_ptmu.at(m)->Draw("BOX2 Z");
       ptjet1_ptjet2_jetmass_ptmu.at(m)->GetXaxis()->SetTitle("PtJet1");
@@ -463,13 +462,13 @@ void PureRate()
       canvas_mu.at(m)->Close();
     }
 
-  purerates_4D->SaveAs("PureRates_4D.root");
+  rates_4D->SaveAs("PureRates_4D.root");
 
-  cout << "\nNumber of bins = " << purerates_4D->GetNbins() << endl;
+  cout << "\nNumber of bins = " << rates_4D->GetNbins() << endl;
   cout << "Number of good combinations = " << combinations << endl;
 
   Int_t Fixed_cut[4] = {1,1,1,1};
-  cout << "\nRate for fixed cut {1,1,1,1} = " << purerates_4D->GetBinContent(Fixed_cut) << "\n" << endl;
+  cout << "\nRate for fixed cut {1,1,1,1} = " << rates_4D->GetBinContent(Fixed_cut) << "\n" << endl;
 
   return;
 }

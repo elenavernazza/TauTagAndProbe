@@ -43,7 +43,7 @@ void Rate()
 
   cout << "Begin loop" << endl;
 
-  TString path = "/grid_mnt/data__data.polcms/cms/vernazza/CMSSW_10_3_1/src/TauTagAndProbe/TauTagAndProbe/test/Run3_MC_VBFHToTauTau_M125_RAW/";
+  TString path = "/grid_mnt/data__data.polcms/cms/vernazza/Ntuples/ZeroBias_Run321755/";
 
   vector <TH3F*> ptjet1_ptjet2_jetmass_ptmu;
   TH2F* PtJet1_PtJet2 = new TH2F("PtJet1_PtJet2", "PtJet1_PtJet2", bins[0], xmin[0], xmax[0], bins[1], xmin[1], xmax[1]);
@@ -94,7 +94,10 @@ void Rate()
       inTree->SetBranchAddress("l1tMuEta", &in_l1tMuEta);
       inTree->SetBranchAddress("l1tMuPhi", &in_l1tMuPhi);
 
-      cout << "Number of events in the Ntuple " << nt << " = " << inTree->GetEntries() << endl;
+      if (nt%10 ==  0)
+        {
+          cout << "\nNumber of events in the Ntuple " << nt << " = " << inTree->GetEntries() << endl;
+        }
 
       for(UInt_t i = 0 ; i < inTree->GetEntries() ; ++i)
         {
@@ -308,12 +311,12 @@ void Rate()
 
   for (Int_t i_n = 0; i_n < bins[3]; ++i_n)
     {
-      cout << "Number of events " << i_n + xmin[3] << " = " << GoodEvents_Mu[i_n] << endl;
+      cout << "Number of events [MuPt > " << i_n + xmin[3] << " GeV] = " << GoodEvents_Mu[i_n] << endl;
     }
 
   // Compute 4D histogram, where at each combination of jetPt1, jetPt2, Mjj and muonPt corresponds a rate
 
-  THnF* rate_4D = new THnF("rates_4D","rates_4D", 4, bins, xmin, xmax);
+  THnF* rates_4D = new THnF("rates_4D","rates_4D", 4, bins, xmin, xmax);
   float integral_xyzw = -1.;
   int combinations = 0;
 
@@ -350,10 +353,10 @@ void Rate()
                       ++ combinations;
                     }
 
-                  if (i_bin_x == 1 && i_bin_y == 1 && i_bin_z == 1 && i_bin_w == 1)
-                    {
-                      cout << "Integral (1,1,1,1) = " << integral_xyzw << endl;
-                    }
+                  // if (i_bin_x == 1 && i_bin_y == 1 && i_bin_z == 1 && i_bin_w == 1)
+                  //   {
+                  //     cout << "Total Integral (1,1,1,1) = " << integral_xyzw << endl;
+                  //   }
                   Int_t v_bin[4] = {i_bin_x, i_bin_y, i_bin_z, i_bin_w};
                   rates_4D->SetBinContent(v_bin, integral_xyzw);
                 }
@@ -374,7 +377,7 @@ void Rate()
             {
               rate_value += ptjet1_ptjet2_jetmass_ptmu.at(i_mu)->Integral(I_bin_x,bins[0]+1,I_bin_y,bins[1]+1,10,bins[2]+1)/Denominator*scale;
             }
-          cout << rate_value << endl;
+          // cout << rate_value << endl;
           rate_2D->SetBinContent(I_bin_x, I_bin_y, rate_value);
         }
     }
@@ -415,8 +418,8 @@ void Rate()
   Tex3.DrawLatexNDC(0.25,0.96,"Zero Bias L1 rate M_{jj} > 420 GeV && p_{T}^{#mu} > 8 GeV");
   Tex3.Draw("same");
 
-  c_2D->SaveAs("rate_ptj1_X_ptj2_Y_mjj_420_ptmu_8.png");
-  c_2D->SaveAs("rate_ptj1_X_ptj2_Y_mjj_420_ptmu_8.pdf");
+  c_2D->SaveAs("rate_2D_ptj1_X_ptj2_Y_mjj_420_ptmu_8.png");
+  c_2D->SaveAs("rate_2D_ptj1_X_ptj2_Y_mjj_420_ptmu_8.pdf");
   c_2D->Close();
 
   // --------------- End ---------------
@@ -447,8 +450,8 @@ void Rate()
   //       }
   //   }
 
-  c->SaveAs("PtJet1_PtJet2.png");
-  c->SaveAs("PtJet1_PtJet2.pdf");
+  c->SaveAs("PtJet1_PtJet2_distribution.png");
+  c->SaveAs("PtJet1_PtJet2_distribution.pdf");
   c->Close();
 
   vector <TCanvas*> canvas_mu;
@@ -461,10 +464,10 @@ void Rate()
   for (Int_t m = 0; m < bins[3]; m++)
     {
       int num = xmin[3] + m;
-      TString canvname = Form("ptjet1_ptjet2_jetmass_ptmu_%d", num);
-      TString pngname = Form("ptjet1_ptjet2_jetmass_ptmu_%d.png", num);
-      TString pdfname = Form("ptjet1_ptjet2_jetmass_ptmu_%d.pdf", num);
-      TString rootname = Form("ptjet1_ptjet2_jetmass_ptmu_%d.root", num);
+      TString canvname = Form("rate_3D_ptjet1_ptjet2_jetmass_ptmu_%d", num);
+      TString pngname = Form("rate_3D_ptjet1_ptjet2_jetmass_ptmu_%d.png", num);
+      TString pdfname = Form("rate_3D_ptjet1_ptjet2_jetmass_ptmu_%d.pdf", num);
+      TString rootname = Form("rate_3D_ptjet1_ptjet2_jetmass_ptmu_%d.root", num);
       canvas_mu.at(m) = new TCanvas(canvname,canvname,900.,650.);
       ptjet1_ptjet2_jetmass_ptmu.at(m)->Draw("BOX2 Z");
       ptjet1_ptjet2_jetmass_ptmu.at(m)->GetXaxis()->SetTitle("PtJet1");
