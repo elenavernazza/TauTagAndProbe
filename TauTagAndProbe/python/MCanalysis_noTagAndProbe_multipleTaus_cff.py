@@ -78,6 +78,7 @@ Ntuplizer_noTagAndProbe_multipleTaus = cms.EDAnalyzer("Ntuplizer_noTagAndProbe_m
     l1tJetCollection = cms.InputTag("caloStage2Digis","Jet"),
     muonCollection = cms.InputTag("slimmedMuons"),
     l1tMuonCollection = cms.InputTag("gmtStage2Digis","Muon"),
+    l1tMETCollection = cms.InputTag("caloStage2Digis","EtSum"),
     Vertexes = cms.InputTag("offlineSlimmedPrimaryVertices"),
     triggerList = HLTLIST,
     L2CaloJet_ForIsoPix_Collection = cms.InputTag("hltL2TausForPixelIsolation", "", "TEST"),

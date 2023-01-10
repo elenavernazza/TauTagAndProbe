@@ -30,10 +30,28 @@ def splitInBlocks (l, n):
 ###########
 
 njobs = 200
-filedir="/home/llr/cms/motta/Run3preparation/CMSSW_11_0_2/src/TauTagAndProbe/TauTagAndProbe/inputFiles"
-filelist = open(filedir+"/VBFHToTauTau_M125_TuneCUETP8M1_14TeV_powheg_pythia8__Run3Winter20DRPremixMiniAOD-110X_mcRun3_2021_realistic_v6-v1__GEN-SIM-RAW.txt")
+#filelist = open("fileList_MC_RAW.txt")
+filelist = open("ZBE_filelist.txt")
+#filelist = open("ZeroBias_Run305310_RAW.txt")
+#filelist = open("VBF_HToInvisible_M125_13TeV_powheg_pythia8_RAW.txt")
+#filelist = open("VBFHToTauTau_M125_13TeV_powheg_pythia8_FlatPU28to62HcalNZSRAW_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1.txt")
+#filelist = open("ZeroBias1-5_Run283171.txt")
 
-folder = "/data_CMS/cms/motta/Run3preparation/2021_10_19_optimizationV0/Run3_MC_VBFHToTauTau_M125_RAW_2021_10_19"
+#filelist = open("fileList_ZeroBias.txt")
+#filelist = open("Data_SingleMu_2016RunB_PromptRecov2_1Luglio.txt")
+
+#folder = "ZeroBias1-5_Run283171_WithMarch2017Layer1_ShapeVeto_04_05_17"
+#folder = "MC_L1_Hinv_HF_TPs_29_05_17"
+
+#folder = "ZeroBias_Run306091_RAW_mode"
+folder = "Run3_MC_VBFHToTauTau_M125_RAW"
+#folder = "ZeroBias_Run305310_RAW_mode"
+#folder = "MC_L1_May2017Layer1_HF_TPs_17_05_17"
+#folder = "MC_L1_May2017Layer1_HF_TPs_29_05_17"
+#folder = "Data_ZeroBias_Run277420_12x12"
+#folder = "MC_RAW_12x12"
+#folder = "MC_RAW_9x9"
+#folder = "testSubmitT3TAndP2Luglio"
 
 JSONfile = "/home/llr/cms/davignon/json_DCSONLY.txt"
 #JSONfile = "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Cert_271036-275125_13TeV_PromptReco_Collisions16_JSON.txt"
@@ -42,7 +60,7 @@ JSONfile = "/home/llr/cms/davignon/json_DCSONLY.txt"
 
 os.system ('source /opt/exp_soft/cms/t3/t3setup')
 
-os.system('mkdir -p ' + folder)
+os.system('mkdir ' + folder)
 files = [f.strip() for f in filelist]
 print "Input has" , len(files) , "files" 
 if njobs > len(files) : njobs = len(files)
@@ -58,7 +76,7 @@ for idx, block in enumerate(fileblocks):
     outRootName = folder + '/Ntuple_' + str(idx) + '.root'
     outJobName  = folder + '/job_' + str(idx) + '.sh'
     outListName = folder + "/filelist_" + str(idx) + ".txt"
-    outLogName  = folder + "/log_" + str(idx) + ".txt"
+    outLogName  = os.getcwd() + "/" + folder + "/log_" + str(idx) + ".txt"
 
     jobfilelist = open(outListName, 'w')
     for f in block: jobfilelist.write(f+"\n")
@@ -82,7 +100,7 @@ for idx, block in enumerate(fileblocks):
     skimjob.close ()
 
     os.system ('chmod u+rwx ' + outJobName)
-    command = ('/home/llr/cms/motta/t3submit -long \'' + outJobName +"\'")
-#    command = ('/home/llr/cms/motta/t3submit -short -q cms \'' + outJobName +"\'")
+    command = ('/opt/exp_soft/cms/t3/t3submit_new -long \'' + outJobName +"\'")
+#    command = ('/opt/exp_soft/cms/t3/t3submit_new -short -q cms \'' + outJobName +"\'")
     print command
-    os.system (command)
+    #os.system (command)

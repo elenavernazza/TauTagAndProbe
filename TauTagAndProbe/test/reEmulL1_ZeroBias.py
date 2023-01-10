@@ -7,7 +7,7 @@ isMC = False
 #isMC = False
 
 #process = cms.Process("ZeroBias",eras.Run2_2016)
-process = cms.Process("ZeroBias",eras.Run2_2017)
+process = cms.Process("ZeroBias",eras.Run2_2018)
 
 process.load('Configuration.StandardSequences.Services_cff')
 process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
@@ -66,7 +66,7 @@ import FWCore.Utilities.FileUtils as FileUtils
 
 if not isMC: # will use 80X
     from Configuration.AlCa.autoCond import autoCond
-    process.GlobalTag.globaltag = '92X_dataRun2_HLT_v7'
+    process.GlobalTag.globaltag = '101X_dataRun2_Prompt_v11'
     #process.GlobalTag.globaltag = '80X_dataRun2_Prompt_v8'
     process.load('TauTagAndProbe.TauTagAndProbe.zeroBias_cff')
     process.source = cms.Source("PoolSource",
