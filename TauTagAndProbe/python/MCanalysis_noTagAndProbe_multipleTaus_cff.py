@@ -52,12 +52,17 @@ goodTaus = cms.EDFilter("PATTauRefSelector",
                 '&& tauID("againstMuonTight3") > 0.5 ' # anti Muon tight
                 '&& tauID("againstElectronVLooseMVA6") > 0.5 ' # anti-Ele loose
         ),
-        filter = cms.bool(True)
+        filter = cms.bool(False)
 )
 
 genMatchedTaus = cms.EDFilter("genMatchTauFilter",
         taus = cms.InputTag("goodTaus")
     )
+
+PFMetNoMu = cms.EDProducer("PFMetNoMuProducer",
+    pfMETCollection = cms.InputTag("slimmedMETs"),
+    muonCollection = cms.InputTag("slimmedMuons")
+)
 
 # Ntuplizer.taus = cms.InputTag("genMatchedTaus")
 Ntuplizer_noTagAndProbe_multipleTaus = cms.EDAnalyzer("Ntuplizer_noTagAndProbe_multipleTaus",
@@ -76,9 +81,11 @@ Ntuplizer_noTagAndProbe_multipleTaus = cms.EDAnalyzer("Ntuplizer_noTagAndProbe_m
     L1EmuTau = cms.InputTag("simCaloStage2Digis", "MP"),
     jetCollection = cms.InputTag("slimmedJets"),
     l1tJetCollection = cms.InputTag("caloStage2Digis","Jet"),
-    muonCollection = cms.InputTag("slimmedMuons"),
+    MuonCollection = cms.InputTag("slimmedMuons"),
     l1tMuonCollection = cms.InputTag("gmtStage2Digis","Muon"),
-    l1tMETCollection = cms.InputTag("caloStage2Digis","EtSum"),
+    l1tSumsCollection = cms.InputTag("caloStage2Digis","EtSum"),
+    pfMETNoMu = cms.InputTag("slimmedMETs"),
+    # pfMETNoMu = cms.InputTag("pfMETCollection"),
     Vertexes = cms.InputTag("offlineSlimmedPrimaryVertices"),
     triggerList = HLTLIST,
     L2CaloJet_ForIsoPix_Collection = cms.InputTag("hltL2TausForPixelIsolation", "", "TEST"),
@@ -88,6 +95,7 @@ Ntuplizer_noTagAndProbe_multipleTaus = cms.EDAnalyzer("Ntuplizer_noTagAndProbe_m
 TAndPseq = cms.Sequence(
     #hltFilter      +
     #goodMuons      +
+    PFMetNoMu      +
     goodTaus       +
     genMatchedTaus 
 )

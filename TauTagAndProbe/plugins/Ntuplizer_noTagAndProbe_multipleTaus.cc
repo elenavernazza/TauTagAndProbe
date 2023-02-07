@@ -19,11 +19,14 @@
 #include <FWCore/Framework/interface/Event.h>
 #include <FWCore/Framework/interface/ESHandle.h>
 #include <FWCore/Utilities/interface/InputTag.h>
-#include <DataFormats/PatCandidates/interface/Muon.h>
+#include "DataFormats/PatCandidates/interface/Muon.h"
 #include <DataFormats/L1Trigger/interface/Muon.h>
 #include <DataFormats/L1Trigger/interface/EtSum.h>
+#include "DataFormats/METReco/interface/PFMET.h"
+#include "DataFormats/METReco/interface/PFMETCollection.h"
+#include "DataFormats/PatCandidates/interface/MET.h"
 #include <DataFormats/PatCandidates/interface/Tau.h>
-#include <DataFormats/PatCandidates/interface/Jet.h>
+#include "DataFormats/PatCandidates/interface/Jet.h"
 
 #include "DataFormats/L1Trigger/interface/Jet.h"
 
@@ -43,13 +46,10 @@
 
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 
-
 #include "tParameterSet.h"
 
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include <DataFormats/Common/interface/View.h>
-
-#include "PhysicsTools/PatAlgos/interface/PATUserDataHelper.h"
 
 
 //Set this variable to decide the number of triggers that you want to check simultaneously
@@ -80,7 +80,7 @@ private:
   virtual void endRun(edm::Run const&, edm::EventSetup const&);
   void Initialize();
   bool hasFilters(const pat::TriggerObjectStandAlone&  obj , const std::vector<std::string>& filtersToLookFor);
-  int FillJet(const edm::View<pat::Jet> *jets, const edm::Event& event, JetCorrectionUncertainty* jecUnc);
+  int FillJet(const edm::View<pat::Jet> *jets, const edm::Event& event, JetCorrectionUncertainty* jecUnc);  
   int FillMuon(const edm::View<pat::Muon> *muons, const edm::Event& event);
 
   TTree *_tree;
@@ -152,6 +152,11 @@ private:
   std::vector<float> _l1tPhiMuon;
   std::vector<int> _l1tMuonNumber;
 
+  float pfMetNoMuPx = -99.;
+  float pfMetNoMuPy = -99.;
+  float pfMetNoMuEt = -99.;
+  float pfMetNoMuPhi = -99.;
+
   std::vector<int> _l1tTypeMET;
   std::vector<float> _l1tMtMET;
   std::vector<float> _l1tPtMET;
@@ -209,7 +214,9 @@ private:
   edm::EDGetTokenT<l1t::TauBxCollection> _L1EmuTauTag  ;
   edm::EDGetTokenT<edm::View<pat::Muon>> _MuonTag;
   edm::EDGetTokenT<l1t::MuonBxCollection> _l1tMuonTag;
-  edm::EDGetTokenT<l1t::EtSumBxCollection> _l1tMETTag;
+  // edm::EDGetTokenT<l1t::EtSumBxCollection> _l1tMETTag;
+  edm::EDGetTokenT<BXVector<l1t::EtSum>> _l1tEtSumsTag;
+  edm::EDGetTokenT<pat::METCollection> _PFMetNoMuTag;
   edm::EDGetTokenT<edm::View<pat::Jet>> _JetTag;
   edm::EDGetTokenT<BXVector<l1t::Jet>> _l1tJetTag;
   // edm::EDGetTokenT<BXVector<l1t::Jet>> _l1tEmuJetTag;
@@ -245,9 +252,11 @@ Ntuplizer_noTagAndProbe_multipleTaus::Ntuplizer_noTagAndProbe_multipleTaus(const
   _triggerBits    (consumes<edm::TriggerResults>                    (iConfig.getParameter<edm::InputTag>("triggerResultsLabel"))),
   _L1TauTag       (consumes<l1t::TauBxCollection>                   (iConfig.getParameter<edm::InputTag>("L1Tau"))),
   _L1EmuTauTag    (consumes<l1t::TauBxCollection>                   (iConfig.getParameter<edm::InputTag>("L1EmuTau"))),
-  _MuonTag        (consumes<edm::View<pat::Muon>>                   (iConfig.getParameter<edm::InputTag>("muonCollection"))),
+  _MuonTag        (consumes<edm::View<pat::Muon>>                   (iConfig.getParameter<edm::InputTag>("MuonCollection"))),
   _l1tMuonTag     (consumes<l1t::MuonBxCollection>                  (iConfig.getParameter<edm::InputTag>("l1tMuonCollection"))),
-  _l1tMETTag      (consumes<l1t::EtSumBxCollection>                 (iConfig.getParameter<edm::InputTag>("l1tMETCollection"))),
+  // _l1tMETTag      (consumes<l1t::EtSumBxCollection>                 (iConfig.getParameter<edm::InputTag>("l1tSumCollection"))),
+  _l1tEtSumsTag   (consumes<BXVector<l1t::EtSum>>                   (iConfig.getParameter<edm::InputTag>("l1tSumsCollection"))),
+  _PFMetNoMuTag   (consumes<pat::METCollection>                     (iConfig.getParameter<edm::InputTag>("pfMETNoMu"))),
   _JetTag         (consumes<edm::View<pat::Jet>>                    (iConfig.getParameter<edm::InputTag>("jetCollection"))),
   _l1tJetTag      (consumes<BXVector<l1t::Jet>>                     (iConfig.getParameter<edm::InputTag>("l1tJetCollection"))),
   _VtxTag         (consumes<std::vector<reco::Vertex>>              (iConfig.getParameter<edm::InputTag>("Vertexes")))
@@ -371,6 +380,11 @@ void Ntuplizer_noTagAndProbe_multipleTaus::Initialize() {
   this -> _l1tPhiMuon.clear();
   this -> _l1tMuonNumber.clear();
 
+  pfMetNoMuPx = -99.;
+  pfMetNoMuPy = -99.;
+  pfMetNoMuEt = -99.;
+  pfMetNoMuPhi = -99.; 
+
   this -> _l1tTypeMET.clear();
   this -> _l1tMtMET.clear();
   this -> _l1tPtMET.clear();
@@ -491,6 +505,11 @@ void Ntuplizer_noTagAndProbe_multipleTaus::beginJob()
   this -> _tree->Branch("l1t_muons_phi",&_l1tPhiMuon);
   this -> _tree->Branch("l1t_muons_number",&_l1tMuonNumber);
 
+  this -> _tree->Branch("pfMetNoMuPx",&pfMetNoMuPx,"pfMetNoMuPx/F");
+  this -> _tree->Branch("pfMetNoMuPy",&pfMetNoMuPy,"pfMetNoMuPy/F");
+  this -> _tree->Branch("pfMetNoMuEt",&pfMetNoMuEt,"pfMetNoMuEt/F");
+  this -> _tree->Branch("pfMetNoMuPhi",&pfMetNoMuPhi,"pfMetNoMuPhi/F");
+
   this -> _tree->Branch("l1t_MET_type",&_l1tTypeMET);
   this -> _tree->Branch("l1t_MET_mt",&_l1tMtMET);
   this -> _tree->Branch("l1t_MET_pt",&_l1tPtMET);
@@ -513,6 +532,7 @@ void Ntuplizer_noTagAndProbe_multipleTaus::beginJob()
   this -> _tree->Branch("jets_genjetIndex", &_jets_genjetIndex);
   this -> _tree->Branch("jets_PUJetID",&_jets_PUJetID);
   this -> _tree->Branch("jets_PUJetIDupdated",&_jets_PUJetIDupdated);
+  this -> _tree->Branch("jets_ID",&_jetID);
   this -> _tree->Branch("jets_vtxPt", &_jets_vtxPt);
   this -> _tree->Branch("jets_vtxMass", &_jets_vtxMass);
   this -> _tree->Branch("jets_vtx3dL", &_jets_vtx3dL);
@@ -569,23 +589,25 @@ void Ntuplizer_noTagAndProbe_multipleTaus::analyze(const edm::Event& iEvent, con
   edm::Handle<edm::TriggerResults> triggerBits;
   edm::Handle<edm::View<pat::Muon>> muonHandle;
   edm::Handle<edm::View<pat::Jet>> jetHandle;
-
   edm::Handle<BXVector<l1t::Jet>> l1tJetHandle;
-  iEvent.getByToken(this -> _l1tJetTag, l1tJetHandle);
 
   edm::Handle<BXVector<l1t::Muon>> l1tMuonHandle;
   iEvent.getByToken(this -> _l1tMuonTag, l1tMuonHandle);
 
-  edm::Handle<BXVector<l1t::EtSum>> l1tMETHandle;
-  iEvent.getByToken(this -> _l1tMETTag, l1tMETHandle);
-
+  // edm::Handle<BXVector<l1t::EtSum>> l1tMETHandle;
+  // iEvent.getByToken(this -> _l1tMETTag, l1tMETHandle);
+  edm::Handle<BXVector<l1t::EtSum>> l1tEtSumsHandle;
+  edm::Handle<pat::METCollection> PFMetNoMuHandle;
   edm::Handle<std::vector<reco::Vertex> >  vertexes;
 
   iEvent.getByToken(this -> _tauTag,   tauHandle);
   iEvent.getByToken(this -> _triggerObjects, triggerObjects);
   iEvent.getByToken(this -> _triggerBits, triggerBits);
-  iEvent.getByToken(this -> _MuonTag, muonHandle);
   iEvent.getByToken(this -> _JetTag, jetHandle);
+  iEvent.getByToken(this -> _l1tJetTag, l1tJetHandle);
+  iEvent.getByToken(this -> _MuonTag, muonHandle);
+  iEvent.getByToken(this -> _l1tEtSumsTag, l1tEtSumsHandle);
+  iEvent.getByToken(this -> _PFMetNoMuTag, PFMetNoMuHandle);
   iEvent.getByToken(this -> _VtxTag,vertexes);
 
   for(BXVector<l1t::Jet>::const_iterator jet = l1tJetHandle -> begin(0); jet != l1tJetHandle -> end(0) ; jet++)
@@ -603,7 +625,7 @@ void Ntuplizer_noTagAndProbe_multipleTaus::analyze(const edm::Event& iEvent, con
       this -> _l1tRawEtJet     . push_back(jet -> rawEt());
       //this -> _l1tIsoEtJet     . push_back(jet -> isoEt());
 
-    }
+          }
 
   int nL1Muons = 0;
   for (l1t::MuonBxCollection::const_iterator bx0MuonIt = l1tMuonHandle->begin(0); bx0MuonIt != l1tMuonHandle->end(0) ; bx0MuonIt++)
@@ -616,7 +638,15 @@ void Ntuplizer_noTagAndProbe_multipleTaus::analyze(const edm::Event& iEvent, con
     }
   this -> _l1tMuonNumber.push_back(nL1Muons);
 
-  for (l1t::EtSumBxCollection::const_iterator bx0METIt = l1tMETHandle->begin(0); bx0METIt != l1tMETHandle->end(0) ; bx0METIt++)
+  const pat::METCollection *metCol = PFMetNoMuHandle.product();
+  const pat::MET theMet = metCol->front();
+
+  pfMetNoMuPx = theMet.px();
+  pfMetNoMuPy = theMet.py();
+  pfMetNoMuEt = theMet.et(); 
+  pfMetNoMuPhi = theMet.phi(); 
+
+  for(BXVector<l1t::EtSum>::const_iterator bx0METIt = l1tEtSumsHandle->begin(0); bx0METIt != l1tEtSumsHandle->end(0) ; bx0METIt++)
     {
       this -> _l1tTypeMET.push_back(bx0METIt->getType());
       this -> _l1tMtMET.push_back(bx0METIt->et());
@@ -627,6 +657,18 @@ void Ntuplizer_noTagAndProbe_multipleTaus::analyze(const edm::Event& iEvent, con
       this -> _l1tIEtaMET.push_back(bx0METIt->hwEta());
       this -> _l1tIPhiMET.push_back(bx0METIt->hwPhi());
     }
+
+  // for (l1t::EtSumBxCollection::const_iterator bx0METIt = l1tMETHandle->begin(0); bx0METIt != l1tMETHandle->end(0) ; bx0METIt++)
+  //   {
+  //     this -> _l1tTypeMET.push_back(bx0METIt->getType());
+  //     this -> _l1tMtMET.push_back(bx0METIt->et());
+  //     this -> _l1tPtMET.push_back(bx0METIt->pt());
+  //     this -> _l1tEtaMET.push_back(bx0METIt->eta());
+  //     this -> _l1tPhiMET.push_back(bx0METIt->phi());
+  //     this -> _l1tIPtMET.push_back(bx0METIt->hwPt());
+  //     this -> _l1tIEtaMET.push_back(bx0METIt->hwEta());
+  //     this -> _l1tIPhiMET.push_back(bx0METIt->hwPhi());
+  //   }
 
   edm::Handle< BXVector<l1t::Tau> >  L1TauHandle;
   iEvent.getByToken(_L1TauTag, L1TauHandle);
