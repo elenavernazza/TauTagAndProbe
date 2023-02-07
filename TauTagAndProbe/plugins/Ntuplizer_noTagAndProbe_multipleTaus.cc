@@ -150,6 +150,7 @@ private:
   std::vector<float> _l1tPtMuon;
   std::vector<float> _l1tEtaMuon;
   std::vector<float> _l1tPhiMuon;
+  std::vector<float> _l1tQualMuon;
   std::vector<int> _l1tMuonNumber;
 
   float pfMetNoMuPx = -99.;
@@ -378,6 +379,7 @@ void Ntuplizer_noTagAndProbe_multipleTaus::Initialize() {
   this -> _l1tPtMuon.clear();
   this -> _l1tEtaMuon.clear();
   this -> _l1tPhiMuon.clear();
+  this -> _l1tQualMuon.clear();
   this -> _l1tMuonNumber.clear();
 
   pfMetNoMuPx = -99.;
@@ -503,6 +505,7 @@ void Ntuplizer_noTagAndProbe_multipleTaus::beginJob()
   this -> _tree->Branch("l1t_muons_pt",&_l1tPtMuon);
   this -> _tree->Branch("l1t_muons_eta",&_l1tEtaMuon);
   this -> _tree->Branch("l1t_muons_phi",&_l1tPhiMuon);
+  this -> _tree->Branch("l1t_muons_qual",&_l1tQualMuon);
   this -> _tree->Branch("l1t_muons_number",&_l1tMuonNumber);
 
   this -> _tree->Branch("pfMetNoMuPx",&pfMetNoMuPx,"pfMetNoMuPx/F");
@@ -634,6 +637,7 @@ void Ntuplizer_noTagAndProbe_multipleTaus::analyze(const edm::Event& iEvent, con
       this -> _l1tPtMuon.push_back(bx0MuonIt->pt());
       this -> _l1tEtaMuon.push_back(bx0MuonIt->eta());
       this -> _l1tPhiMuon.push_back(bx0MuonIt->phi());
+      this -> _l1tQualMuon.push_back(bx0MuonIt->qual());
       ++nL1Muons;
     }
   this -> _l1tMuonNumber.push_back(nL1Muons);
