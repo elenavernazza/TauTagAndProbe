@@ -637,7 +637,7 @@ void Ntuplizer_noTagAndProbe_multipleTaus::analyze(const edm::Event& iEvent, con
       this -> _l1tPtMuon.push_back(bx0MuonIt->pt());
       this -> _l1tEtaMuon.push_back(bx0MuonIt->eta());
       this -> _l1tPhiMuon.push_back(bx0MuonIt->phi());
-      this -> _l1tQualMuon.push_back(bx0MuonIt->qual());
+      this -> _l1tQualMuon.push_back(bx0MuonIt->hwQual());
       ++nL1Muons;
     }
   this -> _l1tMuonNumber.push_back(nL1Muons);
