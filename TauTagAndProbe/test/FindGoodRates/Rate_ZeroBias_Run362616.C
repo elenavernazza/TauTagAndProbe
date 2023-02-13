@@ -106,8 +106,6 @@ void PlotRate_2D_ptj1_mjj(Int_t fixed_bin_y, Int_t fixed_bin_w, THnF* rates_4D, 
 void Rate()
 {
 
-  bool done = false;
-
   Int_t bins[4] = {14, 14, 30, 12};
   Double_t xmin[4] = {30., 30., 200., 3.};
   Double_t xmax[4] = {100., 100., 800., 15.};
@@ -125,13 +123,13 @@ void Rate()
   cout << "Begin loop" << endl;
 
   TString path = "/grid_mnt/data__data.polcms/cms/vernazza/Ntuples/ZeroBias_Run362616/";
-  TString output = "/grid_mnt/data__data.polcms/cms/vernazza/CMSSW_10_2_1/src/TauTagAndProbe/TauTagAndProbe/test/FindGoodRates/RatesStudies_Run362616_L1_DoubleJet_X_Y_Mass_MinZ_MuW";
+  TString output = "/grid_mnt/data__data.polcms/cms/vernazza/CMSSW_10_2_1/src/TauTagAndProbe/TauTagAndProbe/test/FindGoodRates/Test";
   system("mkdir -p "+output);
 
   vector <TH3F*> ptjet1_ptjet2_jetmass_ptmu;
   TH2F* PtJet1_PtJet2 = new TH2F("PtJet1_PtJet2", "PtJet1_PtJet2", bins[0], xmin[0], xmax[0], bins[1], xmin[1], xmax[1]);
 
-  for (Int_t m = 0; m < bins[3]; m++) ptjet1_ptjet2_jetmass_ptmu.push_back(nullptr);
+  for (Int_t m = 0; m < bins[3]; m++) ptjet1_ptjet2_jetmass_ptmu.push_back(nullptr); 
 
   for (Int_t m = 0; m < bins[3]; m++)
     {
@@ -211,7 +209,7 @@ void Rate()
           for (UInt_t iMuon = 0; iMuon < in_l1tMuPt->at(2).size(); ++iMuon)
             {
               // if (in_l1tMuQual->at(2).at(iMuon) < 4) continue; // open quality: 4, 5, 6, 7, 8, 9, 10, 11, 12,13, 14, 15
-              // if (in_l1tMuQual->at(2).at(iMuon) < 12) continue; // single quality: 12, 13, 14, 15
+              if (in_l1tMuQual->at(2).at(iMuon) < 12) continue; // single quality: 12, 13, 14, 15
               myGoodOnlineMuon.SetPtEtaPhiM(in_l1tMuPt->at(2).at(iMuon), in_l1tMuEta->at(2).at(iMuon), in_l1tMuPhi->at(2).at(iMuon), 0.105);
               break;
             }
@@ -222,11 +220,14 @@ void Rate()
             {
               TLorentzVector myOnlineJet1;
               myOnlineJet1.SetPtEtaPhiM(in_l1tPtJet->at(iL1Jet1),in_l1tEtaJet->at(iL1Jet1),in_l1tPhiJet->at(iL1Jet1),0.);
+              if (myOnlineJet1.Pt() < 80) continue;
 
               for (UInt_t jL1Jet2 = iL1Jet1 + 1 ; jL1Jet2 < in_l1tPtJet->size() ; ++jL1Jet2)
                 {
                   TLorentzVector myOnlineJet2;
                   myOnlineJet2.SetPtEtaPhiM(in_l1tPtJet->at(jL1Jet2),in_l1tEtaJet->at(jL1Jet2),in_l1tPhiJet->at(jL1Jet2),0.);
+                  if (myOnlineJet2.Pt() < 30) continue;
+                  
                   TLorentzVector myOnlineDiJet = myOnlineJet1 + myOnlineJet2;
                   float myOnlineMjj = myOnlineDiJet.M();
 
@@ -248,9 +249,9 @@ void Rate()
 
           // if (!check_MuTau && !check_SingleMu) // this is for the pure rate
 
-          if (myGoodOnlineJet1.Pt() > 80 && myGoodOnlineJet2.Pt() > 30 && myGoodOnlineDiJet.M() > 420 && myGoodOnlineMuon.Pt() > 8) 
+          if (myGoodOnlineJet1.Pt() >= 80 && myGoodOnlineJet2.Pt() >= 30 && myGoodOnlineDiJet.M() >= 420 && myGoodOnlineMuon.Pt() >= 8) 
             {
-              Events_L1_DoubleJet_80_30_Mass_Min420_Mu8 += 1*scale_lumi;
+              Events_L1_DoubleJet_80_30_Mass_Min420_Mu8 += 1.*scale_lumi;
             }
 
           for (Int_t n_cut = 0; n_cut < bins[3]; n_cut++)
@@ -313,32 +314,32 @@ void Rate()
         {
           for (Int_t i_bin_z = 1 ; i_bin_z <= bins[2] ; ++i_bin_z)
             {
-              vector <float> int_xyz (bins[3], 0);
+
+              // compute the 3D integral over ptj1, ptj2, mjj for each ptmu bin (from bin 1 to the overflow bin)
+              vector<float> int_xyz ;
               for (Int_t w = 0; w < bins[3] ; w++)
                 {
-                  int_xyz.at(w) = ptjet1_ptjet2_jetmass_ptmu.at(w)->Integral(i_bin_x,bins[0]+1,i_bin_y,bins[1]+1,i_bin_z,bins[2]+1)/Denominator*scale_rate;
+                  int_xyz.push_back(ptjet1_ptjet2_jetmass_ptmu.at(w)->Integral(i_bin_x,bins[0]+1,i_bin_y,bins[1]+1,i_bin_z,bins[2]+1)/Denominator*scale_rate);
                 }
 
               for (Int_t i_bin_w = 1 ; i_bin_w <= bins[3] ; ++i_bin_w)
                 {
+                  // compute the 4D integral over ptmu 
                   integral_xyzw = 0;
-                  for (Int_t i_vec_w = 0; i_vec_w < bins[3]; ++i_vec_w)
-                    {
-                      if (i_vec_w >= i_bin_w - 1)
-                        {
-                          integral_xyzw += int_xyz.at(i_vec_w);
-                        }
-                    }
+                  for (Int_t i_vec_w = i_bin_w - 1; i_vec_w < bins[3]; ++i_vec_w) integral_xyzw += int_xyz.at(i_vec_w);
 
-                  if (integral_xyzw < 1.05 && integral_xyzw > 0.95 && i_bin_x >= i_bin_y) ++ combinations;
-
+                  // fill in the rate_4d histogram to be saved
                   Int_t v_bin[4] = {i_bin_x, i_bin_y, i_bin_z, i_bin_w};
                   rates_4D->SetBinContent(v_bin, integral_xyzw);
+                  if (integral_xyzw < 1.05 && integral_xyzw > 0.95 && i_bin_x >= i_bin_y) ++ combinations;
 
                 }
             }
         }
     }
+
+  Int_t v_bin_test[4] = {11, 1, 12, 6};
+  cout << "Rate_4D = " << rates_4D->GetBinContent(v_bin_test) << endl;
 
   // --------------- Plotting ---------------
 
