@@ -61,7 +61,8 @@ else:
     process.load('TauTagAndProbe.TauTagAndProbe.MCanalysis_noTagAndProbe_multipleTaus_cff')
     process.source = cms.Source("PoolSource",
         fileNames = cms.untracked.vstring(
-            '/store/mc/RunIIAutumn18MiniAOD/VBF-EWKino_DemocraticSlepton_mChargino-100to150_TuneCP2_13TeV-madgraph-pythia8/MINIAODSIM/GridpackScan_102X_upgrade2018_realistic_v15-v1/110000/274F191D-1988-1243-B142-B969869EE78C.root',
+            '/store/mc/Run3Winter21DRMiniAOD/VBFHHTo2B2Tau_CV_1_C2V_1_C3_1_TuneCP5_14TeV-madgraph-pythia8/MINIAODSIM/FlatPU30to80FEVT_112X_mcRun3_2021_realistic_v16-v2/250000/17069e32-1ace-4f1b-8ccd-423f4439ed25.root',
+            #'/store/mc/RunIIAutumn18MiniAOD/VBF-EWKino_DemocraticSlepton_mChargino-100to150_TuneCP2_13TeV-madgraph-pythia8/MINIAODSIM/GridpackScan_102X_upgrade2018_realistic_v15-v1/110000/274F191D-1988-1243-B142-B969869EE78C.root',
             #'/store/mc/RunIISpring16MiniAODv2/GluGluHToTauTau_M125_13TeV_powheg_pythia8/MINIAODSIM/FlatPU20to70HcalNZSRAW_withHLT_80X_mcRun2_asymptotic_v14-v1/50000/B0D22F36-9567-E611-A5FB-0CC47A4DEE76.root'
             #'file:B0D22F36-9567-E611-A5FB-0CC47A4DEE76.root'
             #'/store/mc/RunIIFall15MiniAODv2/GluGluToRadionToHHTo2B2Tau_M-700_narrow_13TeV-madgraph/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/60000/2CD9692A-9EB8-E511-A944-FACADE0000C9.root'

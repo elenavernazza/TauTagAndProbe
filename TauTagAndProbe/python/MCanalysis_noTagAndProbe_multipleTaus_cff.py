@@ -60,8 +60,8 @@ genMatchedTaus = cms.EDFilter("genMatchTauFilter",
     )
 
 PFMetNoMu = cms.EDProducer("PFMetNoMuProducer",
-    pfMETCollection=cms.InputTag("slimmedMETs"),
-    muonCollection=cms.InputTag("slimmedMuons")
+    pfMETCollection = cms.InputTag("slimmedMETs"),
+    muonCollection = cms.InputTag("slimmedMuons")
 )
 
 # Ntuplizer.taus = cms.InputTag("genMatchedTaus")
@@ -81,7 +81,7 @@ Ntuplizer_noTagAndProbe_multipleTaus = cms.EDAnalyzer("Ntuplizer_noTagAndProbe_m
     L1EmuTau = cms.InputTag("simCaloStage2Digis", "MP"),
     jetCollection = cms.InputTag("slimmedJets"),
     l1tJetCollection = cms.InputTag("caloStage2Digis","Jet"),
-    muonCollection = cms.InputTag("slimmedMuons"),
+    MuonCollection = cms.InputTag("slimmedMuons"),
     l1tMuonCollection = cms.InputTag("gmtStage2Digis","Muon"),
     l1tSumsCollection = cms.InputTag("caloStage2Digis","EtSum"),
     pfMETNoMu = cms.InputTag("slimmedMETs"),

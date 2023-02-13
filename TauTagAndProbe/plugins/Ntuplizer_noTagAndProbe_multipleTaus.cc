@@ -19,13 +19,12 @@
 #include <FWCore/Framework/interface/Event.h>
 #include <FWCore/Framework/interface/ESHandle.h>
 #include <FWCore/Utilities/interface/InputTag.h>
-#include <DataFormats/PatCandidates/interface/Muon.h>
+#include "DataFormats/PatCandidates/interface/Muon.h"
 #include <DataFormats/L1Trigger/interface/Muon.h>
 #include <DataFormats/L1Trigger/interface/EtSum.h>
 #include "DataFormats/METReco/interface/PFMET.h"
 #include "DataFormats/METReco/interface/PFMETCollection.h"
 #include "DataFormats/PatCandidates/interface/MET.h"
-#include "DataFormats/PatCandidates/interface/Muon.h"
 #include <DataFormats/PatCandidates/interface/Tau.h>
 #include "DataFormats/PatCandidates/interface/Jet.h"
 
@@ -253,7 +252,7 @@ Ntuplizer_noTagAndProbe_multipleTaus::Ntuplizer_noTagAndProbe_multipleTaus(const
   _triggerBits    (consumes<edm::TriggerResults>                    (iConfig.getParameter<edm::InputTag>("triggerResultsLabel"))),
   _L1TauTag       (consumes<l1t::TauBxCollection>                   (iConfig.getParameter<edm::InputTag>("L1Tau"))),
   _L1EmuTauTag    (consumes<l1t::TauBxCollection>                   (iConfig.getParameter<edm::InputTag>("L1EmuTau"))),
-  _MuonTag        (consumes<edm::View<pat::Muon>>                   (iConfig.getParameter<edm::InputTag>("muonCollection"))),
+  _MuonTag        (consumes<edm::View<pat::Muon>>                   (iConfig.getParameter<edm::InputTag>("MuonCollection"))),
   _l1tMuonTag     (consumes<l1t::MuonBxCollection>                  (iConfig.getParameter<edm::InputTag>("l1tMuonCollection"))),
   // _l1tMETTag      (consumes<l1t::EtSumBxCollection>                 (iConfig.getParameter<edm::InputTag>("l1tSumCollection"))),
   _l1tEtSumsTag   (consumes<BXVector<l1t::EtSum>>                   (iConfig.getParameter<edm::InputTag>("l1tSumsCollection"))),
@@ -533,6 +532,7 @@ void Ntuplizer_noTagAndProbe_multipleTaus::beginJob()
   this -> _tree->Branch("jets_genjetIndex", &_jets_genjetIndex);
   this -> _tree->Branch("jets_PUJetID",&_jets_PUJetID);
   this -> _tree->Branch("jets_PUJetIDupdated",&_jets_PUJetIDupdated);
+  this -> _tree->Branch("jets_ID",&_jetID);
   this -> _tree->Branch("jets_vtxPt", &_jets_vtxPt);
   this -> _tree->Branch("jets_vtxMass", &_jets_vtxMass);
   this -> _tree->Branch("jets_vtx3dL", &_jets_vtx3dL);
