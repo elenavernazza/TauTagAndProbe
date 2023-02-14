@@ -13,6 +13,7 @@
 #include <TLegend.h>
 #include <TPaveText.h>
 #include <TStyle.h>
+#include <TPad.h>
 #include <TROOT.h>
 #include <sstream>
 #include <TBranchElement.h>
@@ -24,6 +25,8 @@
 #include <TGraphAsymmErrors.h>
 #include <cstdlib>
 #include <algorithm>
+#include <TMultiGraph.h>
+#include "../Utils/CheckL1Triggers.h"
 
 using namespace std;
 
@@ -35,6 +38,14 @@ bool CheckGoodMuon (bool in_MuIso, int in_MuID)
     bool isLooseMuon = isPFMuon && (isGlobalMuon | isTrackerMuon);
     if (in_MuIso && isLooseMuon) return true;
     else return false;
+  }
+
+bool CheckMuonQuality (int in_l1tMuQual)
+  {
+    // open quality: 4, 5, 6, 7, 8, 9, 10, 11, 12,13, 14, 15
+    // single quality: 12, 13, 14, 15
+    if (in_l1tMuQual > 3) { return true; }
+    else { return false; }
   }
 
 bool CheckGoodJet (int in_JetID, TString JetIDType)
@@ -74,6 +85,7 @@ void CheckVBF (TTree* inTree, UInt_t i_ev, vector<array<Float_t, 4>> set_of_on_c
     vector<float>   *in_l1tMuPt = 0;
     vector<float>   *in_l1tMuEta = 0;
     vector<float>   *in_l1tMuPhi = 0;
+    vector<float>   *in_l1tMuQual = 0;
     vector<float>   *in_tauPt = 0;
     vector<float>   *in_tauEta = 0;
     vector<float>   *in_tauPhi = 0;
@@ -99,6 +111,7 @@ void CheckVBF (TTree* inTree, UInt_t i_ev, vector<array<Float_t, 4>> set_of_on_c
     inTree->SetBranchAddress("l1t_muons_pt", &in_l1tMuPt);
     inTree->SetBranchAddress("l1t_muons_eta", &in_l1tMuEta);
     inTree->SetBranchAddress("l1t_muons_phi", &in_l1tMuPhi);
+    inTree->SetBranchAddress("l1t_muons_qual", &in_l1tMuQual);
     inTree->SetBranchAddress("tauPt", &in_tauPt);
     inTree->SetBranchAddress("tauEta", &in_tauEta);
     inTree->SetBranchAddress("tauPhi", &in_tauPhi);
@@ -188,6 +201,7 @@ void CheckVBF (TTree* inTree, UInt_t i_ev, vector<array<Float_t, 4>> set_of_on_c
                 for (UInt_t i_L1_mu = 0 ; i_L1_mu < in_l1tMuPt->size() ; ++i_L1_mu)
                   {
                     if (check_mu_matching) break;
+                    if (CheckMuonQuality(int(in_l1tMuQual->at(i_L1_mu))) == false) continue;
                     TLorentzVector myOnlineMuon;
                     myOnlineMuon.SetPtEtaPhiM(in_l1tMuPt->at(i_L1_mu), in_l1tMuEta->at(i_L1_mu), in_l1tMuPhi->at(i_L1_mu), 0.105);
                     if (myOfflineMuon.DeltaR(myOnlineMuon) < 0.3)
@@ -434,9 +448,11 @@ void PlotEfficiency(TString EventSample)
 
     // TString EventSample = "MC_MiniAOD_EWKino_DemocraticSlepton_mChargino_100to150_17_11_22";
     TString Path_ntuples = "/grid_mnt/data__data.polcms/cms/vernazza/Ntuples/"+EventSample;
-    TString output_matching = "/grid_mnt/data__data.polcms/cms/vernazza/CMSSW_10_2_1/src/TauTagAndProbe/TauTagAndProbe/test/PlotMatchingEfficiency/"+EventSample+"_MatchingEfficiency_"+JetSel30+"_"+JetIDType;;
-    TString output_L1 = "/grid_mnt/data__data.polcms/cms/vernazza/CMSSW_10_2_1/src/TauTagAndProbe/TauTagAndProbe/test/PlotMatchingEfficiency/"+EventSample+"_L1Efficiency_"+JetSel30+"_"+JetIDType;;
-    
+    // TString output_matching = "/grid_mnt/data__data.polcms/cms/vernazza/CMSSW_10_2_1/src/TauTagAndProbe/TauTagAndProbe/test/PlotMatchingEfficiency/"+EventSample+"_MatchingEfficiency_"+JetSel30+"_"+JetIDType;;
+    TString output_matching = "./Test_matching";
+    // TString output_L1 = "/grid_mnt/data__data.polcms/cms/vernazza/CMSSW_10_2_1/src/TauTagAndProbe/TauTagAndProbe/test/PlotMatchingEfficiency/"+EventSample+"_L1Efficiency_"+JetSel30+"_"+JetIDType;;
+    TString output_L1 = "./Test_L1";
+
     system("mkdir -p "+output_matching);
     system("mkdir -p "+output_L1);
 
@@ -558,10 +574,87 @@ void PlotEfficiency(TString EventSample)
     TGraphAsymmErrors* TurnOn_L1_Muon = new TGraphAsymmErrors(L1_Offline_Muon, Offline_Muon, "cp");
 
     TCanvas c5 ("c5", "c5", 900., 650.);
-    TurnOn_L1_Muon->SetTitle("");
+
+    TPad* p1 = new TPad("p1", "", 0, 0, 1, 1);
+    p1->SetGrid();
+    p1->SetFillStyle(4000);
+    p1->SetFillColorAlpha(0, 0);
+    TPad* p2 = new TPad("p2", "", 0, 0, 1, 1);
+    p2->SetFillStyle(4000); // will be transparent
+    p2->SetFillColorAlpha(0, 0);
+    TPad* p3 = new TPad("p3", "", 0, 0, 1, 1);
+    p3->SetFillStyle(4000); // will be transparent
+    p3->SetFillColorAlpha(0, 0);
+
+    p1->Draw();
+    p1->cd();
+    TurnOn_L1_Muon->SetTitle(";p_{T} Muon [GeV];Muon L1 Efficiency");
+    TurnOn_L1_Muon->GetXaxis()->SetLimits(0.,50.);
+    TurnOn_L1_Muon->GetXaxis()->SetRangeUser(0,50.);
+    TurnOn_L1_Muon->GetYaxis()->SetRangeUser(0,1.25);
+    TurnOn_L1_Muon->GetXaxis()->SetLabelColor(kWhite);
     TurnOn_L1_Muon->Draw("ALP");
-    TurnOn_L1_Muon->GetXaxis()->SetTitle("p_{T} Muon [GeV]");
-    TurnOn_L1_Muon->GetYaxis()->SetTitle("Muon L1 Efficiency");
+    TurnOn_L1_Muon->SetMarkerStyle(8);
+    TurnOn_L1_Muon->SetMarkerSize(0.75);
+    TurnOn_L1_Muon->SetMarkerColor(1);
+    TurnOn_L1_Muon->SetLineColor(1);
+    TurnOn_L1_Muon->SetFillColor(3);
+    TurnOn_L1_Muon->GetHistogram()->SetStats(0);
+
+    Style_t tfont = TurnOn_L1_Muon->GetHistogram()->GetYaxis()->GetTitleFont();
+    Float_t tsize = TurnOn_L1_Muon->GetHistogram()->GetYaxis()->GetTitleSize();
+    Style_t lfont = TurnOn_L1_Muon->GetHistogram()->GetYaxis()->GetLabelFont();
+    Float_t lsize = TurnOn_L1_Muon->GetHistogram()->GetYaxis()->GetLabelSize();
+
+    // Double_t xmin = p1->GetUxmin();
+    // Double_t xmax = p1->GetUxmax();
+    Double_t xmin = 0;
+    Double_t xmax = 50;
+    Double_t dx = (xmax - xmin) / 0.8; // 10 percent margins left and right
+    Double_t ymin = TurnOn_L1_Muon->GetMinimum();
+    Double_t ymax = TurnOn_L1_Muon->GetMaximum();
+    Double_t dy = (ymax - ymin) / 0.8; // 10 percent margins top and bottom
+    // p2->Range(xmin-0.1*dx, ymin-0.1*dy, xmax+0.1*dx, ymax+0.1*dy);
+    p1->Range(xmin, ymin-0.1*dy, xmax, ymax+0.1*dy);
+    p2->Range(xmin, ymin-0.1*dy, xmax, ymax+0.1*dy);
+    p2->Draw();
+    p2->cd();
+    L1_Offline_Muon->SetTitle("");
+    L1_Offline_Muon->Draw("Y+");
+    L1_Offline_Muon->GetXaxis()->SetRangeUser(0,50);
+    L1_Offline_Muon->GetYaxis()->SetRangeUser(0, 1.3*L1_Offline_Muon->GetMaximum());
+    // L1_Offline_Muon->GetXaxis()->SetLabelColor(kRed);
+    L1_Offline_Muon->SetLineWidth(3);
+    L1_Offline_Muon->SetLineColor(kMagenta);
+    L1_Offline_Muon->SetStats(0);
+    Offline_Muon->Draw("same");
+    Offline_Muon->GetYaxis()->SetRangeUser(0, 1.3*L1_Offline_Muon->GetMaximum());
+    Offline_Muon->SetLineWidth(3);
+    Offline_Muon->SetLineColor(kAzure);
+    Offline_Muon->SetStats(0);
+
+    TGaxis *axis = new TGaxis(xmax, ymin, xmax, ymax, ymin, ymax, 50510, "+L");
+    axis->SetTitle("Events");
+    axis->SetTitleFont(tfont);
+    axis->SetTitleSize(tsize);
+    // axis->SetTitleColor(kRed);
+    axis->SetTitleOffset(1.25);
+    axis->SetLabelFont(lfont);
+    axis->SetLabelSize(lsize);
+    // axis->SetLabelColor(kRed);
+    // axis->SetLineColor(kRed);
+    axis->Draw();
+    
+    TLegend *leg = new TLegend(0.55, 0.77, 0.89, 0.89);
+    leg->SetFillColor(0);
+    leg->SetTextFont(lfont);
+    leg->SetTextSize(lsize);
+    // leg->SetTextAlign(22);
+    leg->AddEntry(TurnOn_L1_Muon, "L1 Efficiency Turn on", "L");
+    leg->AddEntry(L1_Offline_Muon, "Passing Reco", "L");
+    leg->AddEntry(Offline_Muon, "Passing Reco & L1", "L");
+    leg->Draw();
+
     c5.SaveAs(output_L1+"/TurnOn_L1_Muon.png");
     c5.SaveAs(output_L1+"/TurnOn_L1_Muon.pdf");
     c5.Close();
