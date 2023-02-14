@@ -54,9 +54,9 @@ void PlotRate_2D_ptj1_mjj(Int_t fixed_bin_y, Int_t fixed_bin_w, THnF* rates_4D, 
     TCanvas* c_2D_1 = new TCanvas("c_2D_1","c_2D_1",700.,550.);
     c_2D_1->cd();
     c_2D_1->SetRightMargin(0.16); // important for labels going outside the canvas!
-    rate_2D_ptj1_mjj->GetXaxis()->SetTitle("p_{T}^{j1} [GeV]");
+    rate_2D_ptj1_mjj->GetXaxis()->SetTitle("p_{T}^{j1} > X [GeV]");
     rate_2D_ptj1_mjj->GetXaxis()->SetTitleOffset(1.3);
-    rate_2D_ptj1_mjj->GetYaxis()->SetTitle("M_{jj} [GeV]");
+    rate_2D_ptj1_mjj->GetYaxis()->SetTitle("M_{jj} > Y [GeV]");
     rate_2D_ptj1_mjj->GetYaxis()->SetTitleOffset(1.3);
     rate_2D_ptj1_mjj->GetZaxis()->SetTitle("rate [kHz]");
     rate_2D_ptj1_mjj->GetZaxis()->SetTitleOffset(1.3);
@@ -118,12 +118,12 @@ void Rate()
   UInt_t noLumi_events = 0.;
   UInt_t diffMass_events = 0.;
 
-  Float_t Events_L1_DoubleJet_80_30_Mass_Min420_Mu8 = 0.;
+  // Float_t Events_L1_DoubleJet_80_30_Mass_Min420_Mu8 = 0.;
 
   cout << "Begin loop" << endl;
 
   TString path = "/grid_mnt/data__data.polcms/cms/vernazza/Ntuples/ZeroBias_Run362616/";
-  TString output = "/grid_mnt/data__data.polcms/cms/vernazza/CMSSW_10_2_1/src/TauTagAndProbe/TauTagAndProbe/test/FindGoodRates/Test";
+  TString output = "/grid_mnt/data__data.polcms/cms/vernazza/CMSSW_10_2_1/src/TauTagAndProbe/TauTagAndProbe/test/FindGoodRates/Run362616_L1_DoubleJet_X_Y_Mass_MinZ_30_30_MuW_OpenQual";
   system("mkdir -p "+output);
 
   vector <TH3F*> ptjet1_ptjet2_jetmass_ptmu;
@@ -208,8 +208,8 @@ void Rate()
 
           for (UInt_t iMuon = 0; iMuon < in_l1tMuPt->at(2).size(); ++iMuon)
             {
-              // if (in_l1tMuQual->at(2).at(iMuon) < 4) continue; // open quality: 4, 5, 6, 7, 8, 9, 10, 11, 12,13, 14, 15
-              if (in_l1tMuQual->at(2).at(iMuon) < 12) continue; // single quality: 12, 13, 14, 15
+              if (in_l1tMuQual->at(2).at(iMuon) < 4) continue; // open quality: 4, 5, 6, 7, 8, 9, 10, 11, 12,13, 14, 15
+              // if (in_l1tMuQual->at(2).at(iMuon) < 12) continue; // single quality: 12, 13, 14, 15
               myGoodOnlineMuon.SetPtEtaPhiM(in_l1tMuPt->at(2).at(iMuon), in_l1tMuEta->at(2).at(iMuon), in_l1tMuPhi->at(2).at(iMuon), 0.105);
               break;
             }
@@ -220,7 +220,7 @@ void Rate()
             {
               TLorentzVector myOnlineJet1;
               myOnlineJet1.SetPtEtaPhiM(in_l1tPtJet->at(iL1Jet1),in_l1tEtaJet->at(iL1Jet1),in_l1tPhiJet->at(iL1Jet1),0.);
-              if (myOnlineJet1.Pt() < 80) continue;
+              if (myOnlineJet1.Pt() < 30) continue;
 
               for (UInt_t jL1Jet2 = iL1Jet1 + 1 ; jL1Jet2 < in_l1tPtJet->size() ; ++jL1Jet2)
                 {
@@ -249,10 +249,10 @@ void Rate()
 
           // if (!check_MuTau && !check_SingleMu) // this is for the pure rate
 
-          if (myGoodOnlineJet1.Pt() >= 80 && myGoodOnlineJet2.Pt() >= 30 && myGoodOnlineDiJet.M() >= 420 && myGoodOnlineMuon.Pt() >= 8) 
-            {
-              Events_L1_DoubleJet_80_30_Mass_Min420_Mu8 += 1.*scale_lumi;
-            }
+          // if (myGoodOnlineJet1.Pt() >= 80 && myGoodOnlineJet2.Pt() >= 30 && myGoodOnlineDiJet.M() >= 420 && myGoodOnlineMuon.Pt() >= 8) 
+          //   {
+          //     Events_L1_DoubleJet_80_30_Mass_Min420_Mu8 += 1.*scale_lumi;
+          //   }
 
           for (Int_t n_cut = 0; n_cut < bins[3]; n_cut++)
             {
@@ -299,8 +299,8 @@ void Rate()
   cout << "Number of events with different mass = " << diffMass_events << endl;
   cout << "Number of good events = " << GoodEvents << endl;
 
-  cout << "Events_L1_DoubleJet_80_30_Mass_Min420_Mu8 = " << Events_L1_DoubleJet_80_30_Mass_Min420_Mu8 << endl;
-  cout << "Rate L1_DoubleJet_80_30_Mass_Min420_Mu8 = " << Events_L1_DoubleJet_80_30_Mass_Min420_Mu8/Denominator*scale_rate << endl;
+  // cout << "Events_L1_DoubleJet_80_30_Mass_Min420_Mu8 = " << Events_L1_DoubleJet_80_30_Mass_Min420_Mu8 << endl;
+  // cout << "Rate L1_DoubleJet_80_30_Mass_Min420_Mu8 = " << Events_L1_DoubleJet_80_30_Mass_Min420_Mu8/Denominator*scale_rate << endl;
 
   // Compute 4D histogram, where at each combination of jetPt1, jetPt2, Mjj and muonPt corresponds a rate
 
@@ -338,8 +338,8 @@ void Rate()
         }
     }
 
-  Int_t v_bin_test[4] = {11, 1, 12, 6};
-  cout << "Rate_4D = " << rates_4D->GetBinContent(v_bin_test) << endl;
+  // Int_t v_bin_test[4] = {11, 1, 12, 6};
+  // cout << "Rate_4D = " << rates_4D->GetBinContent(v_bin_test) << endl;
 
   // --------------- Plotting ---------------
 
@@ -367,9 +367,9 @@ void Rate()
   TCanvas* c_2D = new TCanvas("c_2D","c_2D",700.,550.);
   c_2D->cd();
   c_2D->SetRightMargin(0.16); // important for labels going outside the canvas!
-  rate_2D->GetXaxis()->SetTitle("p_{T}^{j1} [GeV]");
+  rate_2D->GetXaxis()->SetTitle("p_{T}^{j1} > X [GeV]");
   rate_2D->GetXaxis()->SetTitleOffset(1.3);
-  rate_2D->GetYaxis()->SetTitle("p_{T}^{j2} [GeV]");
+  rate_2D->GetYaxis()->SetTitle("p_{T}^{j2} > Y [GeV]");
   rate_2D->GetYaxis()->SetTitleOffset(1.3);
   rate_2D->GetZaxis()->SetTitle("rate [kHz]");
   rate_2D->GetZaxis()->SetTitleOffset(1.3);
@@ -408,8 +408,8 @@ void Rate()
   PtJet1_PtJet2->SetTitle("");
   PtJet1_PtJet2->Draw("COLZ");
   PtJet1_PtJet2->SetStats(0);
-  PtJet1_PtJet2->GetXaxis()->SetTitle("p_{T}^{Jet1} [GeV]");
-  PtJet1_PtJet2->GetYaxis()->SetTitle("p_{T}^{Jet2} [GeV]");
+  PtJet1_PtJet2->GetXaxis()->SetTitle("p_{T}^{Jet1} > X [GeV]");
+  PtJet1_PtJet2->GetYaxis()->SetTitle("p_{T}^{Jet2} > Y [GeV]");
   PtJet1_PtJet2->GetZaxis()->SetTitle("Acceptance");
   PtJet1_PtJet2->GetZaxis()->SetTitleOffset(1.3);
 
@@ -438,11 +438,11 @@ void Rate()
       canvas_mu.at(m) = new TCanvas(canvname,canvname,900.,650.);
       ptjet1_ptjet2_jetmass_ptmu.at(m)->SetTitle("");
       ptjet1_ptjet2_jetmass_ptmu.at(m)->Draw("BOX2 Z");
-      ptjet1_ptjet2_jetmass_ptmu.at(m)->GetXaxis()->SetTitle("p_{T}^{Jet1}");
+      ptjet1_ptjet2_jetmass_ptmu.at(m)->GetXaxis()->SetTitle("p_{T}^{Jet1} > X [GeV]");
       ptjet1_ptjet2_jetmass_ptmu.at(m)->GetXaxis()->SetTitleOffset(1.8);
-      ptjet1_ptjet2_jetmass_ptmu.at(m)->GetYaxis()->SetTitle("p_{T}^{Jet2}");
+      ptjet1_ptjet2_jetmass_ptmu.at(m)->GetYaxis()->SetTitle("p_{T}^{Jet2} > Y [GeV]");
       ptjet1_ptjet2_jetmass_ptmu.at(m)->GetYaxis()->SetTitleOffset(1.8);
-      ptjet1_ptjet2_jetmass_ptmu.at(m)->GetZaxis()->SetTitle("m_{jj}");
+      ptjet1_ptjet2_jetmass_ptmu.at(m)->GetZaxis()->SetTitle("m_{jj} > Z [GeV]");
       ptjet1_ptjet2_jetmass_ptmu.at(m)->GetZaxis()->SetTitleOffset(1.4);
       ptjet1_ptjet2_jetmass_ptmu.at(m)->SetMinimum(0);
       ptjet1_ptjet2_jetmass_ptmu.at(m)->SetMaximum(50);
