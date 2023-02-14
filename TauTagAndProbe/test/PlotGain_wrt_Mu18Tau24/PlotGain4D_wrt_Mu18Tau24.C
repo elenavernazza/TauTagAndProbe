@@ -47,7 +47,7 @@ void PlotGain()
     vector<array<Int_t, 4>> set_of_on_bins;
 
     // definition of online and offline selections list giving a good rate close to 1 kHz 
-    FindGoodRates(rate_4D, &set_of_on_cuts, &set_of_off_cuts, &set_of_on_bins, starting_x_bin);
+    FindGoodRates(rate_4D, &set_of_on_cuts, &set_of_off_cuts, &set_of_on_bins, starting_x_bin); // defined in ../Utils/CheckL1Triggers.h
 
     cout << "Size of the array with Online cuts = " << set_of_on_cuts.size() << endl;
     cout << "Size of the array with Offline cuts = " << set_of_off_cuts.size() << endl;
@@ -70,7 +70,8 @@ void PlotGain()
     if (JetSel30 == "JetSel30") {checkJetSel30 = true;}
     else if (JetSel30 == "NoJetSel30") {checkJetSel30 = false;}
     else {cout << "Chose another name! " << endl;}
-    TString EventSample = "MC_MiniAOD_VBFHHTo2B2Tau_12_01_23";
+    
+    TString EventSample = "MC_MiniAOD_VBFHHTo2B2Tau_14_02_23";
     TString Path_ntuples = "/grid_mnt/data__data.polcms/cms/vernazza/Ntuples/"+EventSample;
     TString Output = "/grid_mnt/data__data.polcms/cms/vernazza/CMSSW_10_2_1/src/TauTagAndProbe/TauTagAndProbe/test/PlotGain_wrt_Mu18Tau24_PureRate/"+EventSample+"_GainPlots";
     system("mkdir -p "+Output);
@@ -94,13 +95,13 @@ void PlotGain()
         // for (UInt_t i_ev = 0 ; i_ev < 20 ; ++i_ev)
           {
             // The MuTau trigger is computed separately, since it has fixed thresholds values
-            bool pass_MuTau = CheckMuTau(inTree, i_ev, JetIDType, Method, checkJetSel30);
+            bool pass_MuTau = CheckMuTau(inTree, i_ev, JetIDType, Method, checkJetSel30); // defined in ../Utils/CheckL1Triggers.h
             if (pass_MuTau)
               {
                 ++ acceptance_MuTau;
               }
             // The VBF trigger is computed for all the possible good combinations of selections
-            CheckVBF(inTree, i_ev, set_of_on_cuts, set_of_off_cuts, pass_MuTau, &acceptance_VBF, &acceptance_MuTau_VBF, JetIDType, Method, checkJetSel30);
+            CheckVBF_vs_MuTau(inTree, i_ev, set_of_on_cuts, set_of_off_cuts, pass_MuTau, &acceptance_VBF, &acceptance_MuTau_VBF, JetIDType, Method, checkJetSel30); // defined in ../Utils/CheckL1Triggers.h
 
           }
       }
@@ -220,6 +221,6 @@ void PlotGain()
     cout << "Maximum gain is for cut [" << Max_Acceptance_cut[0] << "," << Max_Acceptance_cut[1] << "," << Max_Acceptance_cut[2] << "," << Max_Acceptance_cut[3] << "] = " << Max_Acceptance_gain << endl;
     cout << "Corresponding acceptance = " << Max_Acceptance << endl;
 
-    PlotGain_2D_ptj1_mjj (30., 3., bins[0], xmin[0], xmax[0], bins[2], xmin[2], xmax[2], set_of_on_cuts, set_of_on_bins, acceptance_VBF, acceptance_MuTau_VBF, acceptance_MuTau, Output);
+    PlotGain_2D_ptj1_mjj (30., 3., bins[0], xmin[0], xmax[0], bins[2], xmin[2], xmax[2], set_of_on_cuts, set_of_on_bins, acceptance_VBF, acceptance_MuTau_VBF, acceptance_MuTau, Output); // defined in ../Utils/CheckL1Triggers.h
 
   }

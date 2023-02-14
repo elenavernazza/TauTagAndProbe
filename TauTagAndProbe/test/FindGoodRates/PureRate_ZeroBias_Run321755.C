@@ -141,7 +141,6 @@ void PureRate()
       ptjet1_ptjet2_jetmass_ptmu.at(m) = new TH3F(histname, histname, bins[0], xmin[0], xmax[0], bins[1], xmin[1], xmax[1], bins[2], xmin[2], xmax[2]);
     }
 
-  int number_of_not_isolate_muons = 0;
   float nb = 2544.;
   float scale_rate = 0.001*(nb*11245.6);
   float thisLumiRun = 0; // this value will change according to the LS in order to correctly weight the events
@@ -208,9 +207,7 @@ void PureRate()
           else if(in_lumi >= 600 || in_lumi < 729) thisLumiRun = 1.208E34;
 
           scale_lumi = scaleToLumi/thisLumiRun;
-
           Float_t weight = 1.;
-
           ++Denominator;
 
           bool L1_objects_VBF = in_l1tPtJet->size() > 1 && in_l1tMuPt->size() > 0 ;
@@ -223,42 +220,14 @@ void PureRate()
           TLorentzVector myGoodOnlineJet2;
           TLorentzVector myGoodOnlineDiJet;
 
-          bool IsolatedMuon = false;
-
           float myGoodOnlineMjj = -1.;
 
           if (L1_objects_VBF)
             {
 
               ++ GoodEvents;
-
-              for (UInt_t iL1Muon = 0 ; iL1Muon < in_l1tMuPt->size() ; ++iL1Muon)
-                {
-                  if (IsolatedMuon) break;
-                  TLorentzVector myOnlineMuon;
-                  myOnlineMuon.SetPtEtaPhiM(in_l1tMuPt->at(iL1Muon), in_l1tMuEta->at(iL1Muon), in_l1tMuPhi->at(iL1Muon), 0.105);
-                  bool myIsolationCondition = true;
-                  for (UInt_t iL1Jet = 0 ; iL1Jet < in_l1tPtJet->size() ; ++iL1Jet)
-                    {
-                      if (in_l1tPtJet->at(iL1Jet) > 5)
-                        {
-                          TLorentzVector myOnlineJet;
-                          myOnlineJet.SetPtEtaPhiM(in_l1tPtJet->at(iL1Jet),in_l1tEtaJet->at(iL1Jet),in_l1tPhiJet->at(iL1Jet),0.);
-                          if (myOnlineMuon.DeltaR(myOnlineJet) < 0.3)
-                            {
-                              // cout << "Muon matched to " << iL1Jet << " DeltaR = " << myOnlineMuon.DeltaR(myOnlineJet) << endl;
-                              myIsolationCondition = false;
-                            }
-                        }
-                    }
-                  if (myIsolationCondition)
-                    {
-                      myGoodOnlineMuon = myOnlineMuon;
-                      IsolatedMuon = true;
-                      break;
-                    }
-                }
-
+              myGoodOnlineMuon.SetPtEtaPhiM(in_l1tMuPt->at(iL1Muon), in_l1tMuEta->at(iL1Muon), in_l1tMuPhi->at(iL1Muon), 0.105);
+              
               if (L1_Objects_MuTau) myGoodOnlineTau.SetPtEtaPhiM(in_l1tauPt->at(0), in_l1tauEta->at(0), in_l1tauPhi->at(0), 1.776);
 
               for (UInt_t iL1Jet1 = 0 ; iL1Jet1 < in_l1tPtJet->size() ; ++iL1Jet1)
@@ -289,9 +258,7 @@ void PureRate()
               bool check_MuTau = L1_Objects_MuTau && (myGoodOnlineMuon.Pt() > 18) && (myGoodOnlineTau.Pt() > 24);
               bool check_SingleMu = L1_Objects_SingleMu && (myGoodOnlineMuon.Pt() > 22);
 
-              if (!IsolatedMuon) ++number_of_not_isolate_muons;
-
-              if (!check_MuTau && !check_SingleMu && IsolatedMuon)
+              if (!check_MuTau && !check_SingleMu)
                 {
 
                   for (Int_t n_cut = 0; n_cut < bins[3]; n_cut++)
@@ -332,8 +299,6 @@ void PureRate()
             }
         }
     }
-
-  cout << "\nNumber of not isolated muons = " << number_of_not_isolate_muons << endl;
 
   cout << "Denominator = " << Denominator << endl;
   cout << "Number of events without jets or muons = " << noObjects_events << endl;

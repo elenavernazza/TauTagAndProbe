@@ -3,9 +3,11 @@
 
 bool CheckGoodMuon (bool in_MuIso, int in_MuID);
 
+bool CheckMuonQuality (float in_l1tMuQual);
+
 bool CheckGoodJet (int in_JetID, TString JetIDType);
 
-void CheckVBF (TTree* inTree, 
+void CheckVBF_vs_MuTau (TTree* inTree, 
                 UInt_t  i_ev, 
                 vector<array<Float_t, 4>> set_of_on_cuts, 
                 vector<array<Float_t, 4>> set_of_off_cuts, 

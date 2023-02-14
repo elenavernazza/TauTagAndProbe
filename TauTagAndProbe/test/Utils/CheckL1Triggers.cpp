@@ -37,7 +37,13 @@ bool CheckGoodMuon (bool in_MuIso, int in_MuID)
     else return false;
   }
 
-// bool CheckMuonQuality()
+bool CheckMuonQuality (int in_l1tMuQual)
+  {
+    // open quality: 4, 5, 6, 7, 8, 9, 10, 11, 12,13, 14, 15
+    // single quality: 12, 13, 14, 15
+    if (in_l1tMuQual > 3) { return true; }
+    else { return false; }
+  }
 
 bool CheckGoodJet (int in_JetID, TString JetIDType)
   {
@@ -52,7 +58,7 @@ bool CheckGoodJet (int in_JetID, TString JetIDType)
   }
 
 // Check if a given event passes selections for the acceptance: offline + online + matching for all objects involved in VBF trigger
-void CheckVBF (TTree* inTree, UInt_t  i_ev, vector<array<Float_t, 4>> set_of_on_cuts, vector<array<Float_t, 4>> set_of_off_cuts, bool pass_MuTau, vector<UInt_t>* acceptance_VBF, vector<UInt_t>* acceptance_MuTau_VBF, TString JetIDType, TString Method, bool JetSel30)
+void CheckVBF_vs_MuTau (TTree* inTree, UInt_t  i_ev, vector<array<Float_t, 4>> set_of_on_cuts, vector<array<Float_t, 4>> set_of_off_cuts, bool pass_MuTau, vector<UInt_t>* acceptance_VBF, vector<UInt_t>* acceptance_MuTau_VBF, TString JetIDType, TString Method, bool JetSel30)
   {
 
     ULong64_t       in_EventNumber =  0;
@@ -73,6 +79,7 @@ void CheckVBF (TTree* inTree, UInt_t  i_ev, vector<array<Float_t, 4>> set_of_on_
     vector<float>   *in_l1tMuPt = 0;
     vector<float>   *in_l1tMuEta = 0;
     vector<float>   *in_l1tMuPhi = 0;
+    vector<float>   *in_l1tMuQual = 0;
     vector<float>   *in_tauPt = 0;
     vector<float>   *in_tauEta = 0;
     vector<float>   *in_tauPhi = 0;
@@ -98,6 +105,7 @@ void CheckVBF (TTree* inTree, UInt_t  i_ev, vector<array<Float_t, 4>> set_of_on_
     inTree->SetBranchAddress("l1t_muons_pt", &in_l1tMuPt);
     inTree->SetBranchAddress("l1t_muons_eta", &in_l1tMuEta);
     inTree->SetBranchAddress("l1t_muons_phi", &in_l1tMuPhi);
+    inTree->SetBranchAddress("l1t_muons_qual", &in_l1tMuQual);
     inTree->SetBranchAddress("tauPt", &in_tauPt);
     inTree->SetBranchAddress("tauEta", &in_tauEta);
     inTree->SetBranchAddress("tauPhi", &in_tauPhi);
@@ -174,7 +182,7 @@ void CheckVBF (TTree* inTree, UInt_t  i_ev, vector<array<Float_t, 4>> set_of_on_
                     for (UInt_t i_L1_mu = 0 ; i_L1_mu < in_l1tMuPt->size() ; ++i_L1_mu)
                       {
                         if (check_mu_matching) break;
-                        // if (CheckMuonQuality() == false) continue;
+                        if (CheckMuonQuality(int(in_l1tMuQual->at(i_L1_mu))) == false) continue;
                         TLorentzVector myOnlineMuon;
                         myOnlineMuon.SetPtEtaPhiM(in_l1tMuPt->at(i_L1_mu), in_l1tMuEta->at(i_L1_mu), in_l1tMuPhi->at(i_L1_mu), 0.105);
                         if (myOfflineMuon.DeltaR(myOnlineMuon) < 0.3)
@@ -409,6 +417,7 @@ bool CheckMuTau (TTree* inTree, UInt_t i_ev, TString JetIDType, TString Method, 
     vector<float>   *in_l1tMuPt = 0;
     vector<float>   *in_l1tMuEta = 0;
     vector<float>   *in_l1tMuPhi = 0;
+    vector<float>   *in_l1tMuQual = 0;
     vector<float>   *in_tauPt = 0;
     vector<float>   *in_tauEta = 0;
     vector<float>   *in_tauPhi = 0;
@@ -434,6 +443,7 @@ bool CheckMuTau (TTree* inTree, UInt_t i_ev, TString JetIDType, TString Method, 
     inTree->SetBranchAddress("l1t_muons_pt", &in_l1tMuPt);
     inTree->SetBranchAddress("l1t_muons_eta", &in_l1tMuEta);
     inTree->SetBranchAddress("l1t_muons_phi", &in_l1tMuPhi);
+    inTree->SetBranchAddress("l1t_muons_qual", &in_l1tMuQual);
     inTree->SetBranchAddress("tauPt", &in_tauPt);
     inTree->SetBranchAddress("tauEta", &in_tauEta);
     inTree->SetBranchAddress("tauPhi", &in_tauPhi);
@@ -476,6 +486,7 @@ bool CheckMuTau (TTree* inTree, UInt_t i_ev, TString JetIDType, TString Method, 
                 for (UInt_t i_L1_mu = 0 ; i_L1_mu < in_l1tMuPt->size() ; ++i_L1_mu)
                   {
                     if (check_mu_matching) break;
+                    if (CheckMuonQuality(int(in_l1tMuQual->at(i_L1_mu))) == false) continue;
                     TLorentzVector myOnlineMuon;
                     myOnlineMuon.SetPtEtaPhiM(in_l1tMuPt->at(i_L1_mu), in_l1tMuEta->at(i_L1_mu), in_l1tMuPhi->at(i_L1_mu), 0.105);
                     Float_t deltaR = myOfflineMuon.DeltaR(myOnlineMuon);
@@ -652,7 +663,7 @@ bool CheckMuTau (TTree* inTree, UInt_t i_ev, TString JetIDType, TString Method, 
 
 // Takes 4D rate histogram computed by MakeRatesNew/Rate_ZeroBias_Run316216_new.C and considers only the good combinations giving a rate close to 1 kHz
 // The function returns a pointer to the list of online (set_of_on_cuts) and corresponding offline (set_of_off_cuts) cuts giving the good rate
-void FindGoodRates(THnF* rate_4D, vector<array<Float_t, 4>>* set_of_on_cuts, vector<array<Float_t, 4>>* set_of_off_cuts, vector<array<Int_t, 4>>* set_of_on_bins, Int_t starting_x_bin)
+void FindGoodRates (THnF* rate_4D, vector<array<Float_t, 4>>* set_of_on_cuts, vector<array<Float_t, 4>>* set_of_off_cuts, vector<array<Int_t, 4>>* set_of_on_bins, Int_t starting_x_bin)
   {
 
     cout << "\nFind Good Rates\n" << endl;
