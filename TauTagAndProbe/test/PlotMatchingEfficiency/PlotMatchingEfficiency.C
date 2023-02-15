@@ -435,23 +435,228 @@ void CheckVBF (TTree* inTree, UInt_t i_ev, vector<array<Float_t, 4>> set_of_on_c
       }
   }
 
+void PlotDistributions (TString output, TH1F* Total, TH1F* Match, TH1F* Offline, TH1F* L1_Offline, TString DistributionName, TString XaxisTitle)
+  {
+    
+    TString rootname = output+"/"+DistributionName+".root";
+    TFile* out_file = TFile::Open(rootname, "recreate");
+    out_file->cd();
+
+    TCanvas c ("c", "c", 900., 900.);
+    c.cd();
+    c.SetGrid(10,10);
+
+    Total->SetTitle("");
+    Total->GetYaxis()->SetRangeUser(0,1.05*Total->GetBinContent(Total->GetMaximumBin()));
+    Match->GetYaxis()->SetRangeUser(0,1.05*Total->GetBinContent(Total->GetMaximumBin()));
+    L1_Offline->GetYaxis()->SetRangeUser(0,1.05*Total->GetBinContent(Total->GetMaximumBin()));
+    Offline->GetYaxis()->SetRangeUser(0,1.05*Total->GetBinContent(Total->GetMaximumBin()));
+    Total->SetStats(0);
+    Int_t steps = (Total->GetXaxis()->GetXmax() - Total->GetXaxis()->GetXmin())/Total->GetNbinsX();
+    TString title = "Entries/"+to_string(steps)+" GeV";
+    Total->GetYaxis()->SetTitle(title);
+    Total->GetYaxis()->SetTitleOffset(1.55);
+    Total->GetXaxis()->SetTitle(XaxisTitle);
+    Total->GetXaxis()->SetTitleOffset(1.2);
+    Total->Draw();
+    Total->SetLineWidth(3);
+    Total->SetLineColor(kAzure);
+    Total->SetLineStyle(7);
+    Match->Draw("same");
+    Match->SetLineWidth(3);
+    Match->SetLineStyle(1);
+    Match->SetLineColor(kAzure+5);
+    Match->SetFillColorAlpha(kAzure+5, 0.05);
+    Offline->Draw("same");
+    Offline->SetLineWidth(3);
+    Offline->SetLineStyle(7);
+    Offline->SetLineColor(kViolet);
+    L1_Offline->Draw("same");
+    L1_Offline->SetLineWidth(3);
+    L1_Offline->SetLineStyle(1);
+    L1_Offline->SetLineColor(kViolet+5);
+    L1_Offline->SetFillColorAlpha(kViolet+5, 0.05);
+
+    Match->Write();
+    Total->Write();
+    L1_Offline->Write();
+    Offline->Write();
+
+    TLegend Legend11 (0.45,0.74,0.89,0.89);
+    Legend11.SetBorderSize(0);
+    Legend11.AddEntry(Total, "Inclusive", "LPE");
+    Legend11.AddEntry(Match, "Passing Matching", "LPE");
+    Legend11.AddEntry(Offline, "Passing Reco", "LPE");
+    Legend11.AddEntry(L1_Offline, "Passing L1+Matching+Reco", "LPE");
+    Legend11.Draw();
+
+    TLatex Tex1;
+    Tex1.SetTextSize(0.03);
+    Tex1.DrawLatexNDC(0.11,0.91,"#scale[1.5]{CMS} Simulation");
+    Tex1.Draw("same");
+
+    TLatex Tex2;
+    Tex2.SetTextSize(0.035);
+    Tex2.SetTextAlign(31);
+    Tex2.DrawLatexNDC(0.90,0.91,"(14 TeV)");
+    Tex2.Draw("same");
+
+    c.Write();
+    out_file->Close();
+
+    c.SaveAs(output+"/"+DistributionName+".png");
+    c.SaveAs(output+"/"+DistributionName+".pdf");
+    // c.SetLogy();
+    // c.SaveAs(output+"/MuonDistribution_logY.png");
+    // c.SaveAs(output+"/MuonDistribution_logY.pdf");
+    c.Close();
+
+  }
+
+void PlotTurnOns (TString output, TString TurnOnName, TH1F* L1_Offline, TH1F* Offline, TString YaxisTitle, TString XaxisTitle, Float_t xmin, Float_t xmax, TString type)
+  {
+    TString rootname = output+"/"+TurnOnName+".root";
+    TFile* out_file = TFile::Open(rootname, "recreate");
+    out_file->cd();
+
+    TGraphAsymmErrors* TurnOn_L1 = new TGraphAsymmErrors(L1_Offline, Offline, "cp");
+
+    TCanvas c ("c", "c", 900., 900.);
+    TPad* p1 = new TPad("p1", "", 0, 0, 1, 1);
+    p1->SetGrid();
+    p1->SetFillStyle(4000);
+    p1->SetFillColorAlpha(0, 0);
+    TPad* p2 = new TPad("p2", "", 0, 0, 1, 1);
+    p2->SetFillStyle(4000); // will be transparent
+    p2->SetFillColorAlpha(0, 0);
+
+    p1->Draw();
+    p1->cd();
+    TurnOn_L1->SetTitle("");
+    TurnOn_L1->GetYaxis()->SetTitle("L1 Efficiency");
+    TurnOn_L1->GetXaxis()->SetLimits(xmin,xmax);
+    TurnOn_L1->GetXaxis()->SetRangeUser(xmin,xmax);
+    TurnOn_L1->GetYaxis()->SetRangeUser(0,1.2);
+    TurnOn_L1->GetXaxis()->SetLabelColor(kWhite);
+    TurnOn_L1->Draw("ALP");
+    TurnOn_L1->SetMarkerStyle(8);
+    TurnOn_L1->SetMarkerSize(0.75);
+    TurnOn_L1->SetMarkerColor(1);
+    TurnOn_L1->SetLineColor(1);
+    TurnOn_L1->SetFillColor(3);
+    TurnOn_L1->GetHistogram()->SetStats(0);
+
+    Style_t tfont = TurnOn_L1->GetHistogram()->GetYaxis()->GetTitleFont();
+    Float_t tsize = TurnOn_L1->GetHistogram()->GetYaxis()->GetTitleSize();
+    Style_t lfont = TurnOn_L1->GetHistogram()->GetYaxis()->GetLabelFont();
+    Float_t lsize = TurnOn_L1->GetHistogram()->GetYaxis()->GetLabelSize();
+
+    Double_t dx = (xmax - xmin) / 0.8; // 10 percent margins left and right
+    Double_t ymin = TurnOn_L1->GetMinimum();
+    Double_t ymax = TurnOn_L1->GetMaximum();
+    Double_t dy = (ymax - ymin) / 0.8; // 10 percent margins top and bottom
+    p1->Range(xmin, ymin-0.1*dy, xmax, ymax+0.1*dy);
+    p2->Range(xmin, ymin-0.1*dy, xmax, ymax+0.1*dy);
+    p2->Draw();
+    p2->cd();
+    L1_Offline->SetTitle("");
+    L1_Offline->Draw("Y+");
+    L1_Offline->GetXaxis()->SetTitle(XaxisTitle);
+    L1_Offline->GetXaxis()->SetTitleOffset(1.2);
+    Int_t steps = (xmax-xmin)/L1_Offline->GetNbinsX();
+    TString title = "Entries/"+to_string(steps)+" GeV";
+    L1_Offline->GetYaxis()->SetTitle(title);
+    L1_Offline->GetXaxis()->SetRangeUser(xmin,xmax);
+    L1_Offline->GetYaxis()->SetRangeUser(0, 1.5*L1_Offline->GetMaximum());
+    // L1_Offline->GetXaxis()->SetLabelColor(kRed);
+    L1_Offline->SetLineWidth(3);
+    L1_Offline->SetLineColor(kAzure+5);
+    L1_Offline->SetFillColorAlpha(kAzure+5,0.1);
+    L1_Offline->SetStats(0);
+    Offline->Draw("same");
+    Offline->GetYaxis()->SetRangeUser(0, 1.5*L1_Offline->GetMaximum());
+    Offline->SetLineWidth(3);
+    Offline->SetLineStyle(7);
+    Offline->SetLineColor(kAzure);
+    Offline->SetStats(0);
+
+    TGaxis *axis = new TGaxis(xmax, ymin, xmax, ymax, ymin, ymax, 50510, "+L");
+    axis->SetTitleFont(tfont);
+    axis->SetTitleSize(tsize);
+    axis->SetLabelFont(lfont);
+    axis->SetLabelSize(lsize);
+    axis->SetLabelColor(kAzure);
+    axis->SetTitleColor(kAzure);
+    axis->Draw();
+    
+    TLatex Tex1;
+    Tex1.SetTextSize(0.03);
+    Tex1.DrawLatexNDC(0.1,0.91,"#scale[1.5]{CMS} Simulation");
+    Tex1.Draw("same");
+
+    TLatex Tex2;
+    Tex2.SetTextSize(0.035);
+    Tex2.SetTextAlign(31);
+    Tex2.DrawLatexNDC(0.9,0.91,"(14 TeV)");
+    Tex2.Draw("same");
+
+    TString TurnOn_L1_title;
+    TString L1_Offline_title;
+    TString Offline_title;
+
+    if (type == "matching")
+      {
+        TurnOn_L1_title = "Matching Efficiency";
+        L1_Offline_title = "Passing Matching";
+        Offline_title = "Inclusive";
+        L1_Offline->GetYaxis()->SetTitleOffset(1.55);
+      }
+    
+    else if (type == "l1")
+      {
+        TurnOn_L1_title = "L1 Efficiency";
+        L1_Offline_title = "Passing Reco & L1";
+        Offline_title = "Passing Reco";
+        L1_Offline->GetYaxis()->SetTitleOffset(1.4);
+      }
+
+    TLegend *leg = new TLegend(0.55, 0.79, 0.89, 0.89);
+    leg->SetFillColor(0);
+    leg->SetTextFont(lfont);
+    leg->SetTextSize(0.025);
+    // leg->SetTextAlign(22);
+    leg->AddEntry(TurnOn_L1, TurnOn_L1_title, "L");
+    leg->AddEntry(Offline, Offline_title, "L");
+    leg->AddEntry(L1_Offline, L1_Offline_title, "L");
+    leg->Draw();
+
+    TurnOn_L1->Write();
+    Offline->Write();
+    L1_Offline->Write();
+    c.Write();
+
+    out_file->Close();
+
+    c.SaveAs(output+"/"+TurnOnName+".png");
+    c.SaveAs(output+"/"+TurnOnName+".png");
+    c.Close();
+  }
+
 // Plot jetPt and mjj distribution for VBF events
-void PlotEfficiency(TString EventSample)
+void PlotEfficiency (TString EventSample)
   {
 
     TString Method = "Way1"; // when not specified it's way1
-    TString JetIDType = "tightLepVetoJetID";
-    TString JetSel30 = "JetSel30";
+    TString JetIDType = "tightLepVetoJetID"; // when not specified it's tightLepVetoJetID
+    TString JetSel30 = "JetSel30"; // when not specified it's JetSel30
     bool checkJetSel30 = false;
     if (JetSel30 == "JetSel30") {checkJetSel30 = true;}
     else if (JetSel30 == "NoJetSel30") {checkJetSel30 = false;}
 
     // TString EventSample = "MC_MiniAOD_EWKino_DemocraticSlepton_mChargino_100to150_17_11_22";
     TString Path_ntuples = "/grid_mnt/data__data.polcms/cms/vernazza/Ntuples/"+EventSample;
-    // TString output_matching = "/grid_mnt/data__data.polcms/cms/vernazza/CMSSW_10_2_1/src/TauTagAndProbe/TauTagAndProbe/test/PlotMatchingEfficiency/"+EventSample+"_MatchingEfficiency_"+JetSel30+"_"+JetIDType;;
-    TString output_matching = "./Test_matching";
-    // TString output_L1 = "/grid_mnt/data__data.polcms/cms/vernazza/CMSSW_10_2_1/src/TauTagAndProbe/TauTagAndProbe/test/PlotMatchingEfficiency/"+EventSample+"_L1Efficiency_"+JetSel30+"_"+JetIDType;;
-    TString output_L1 = "./Test_L1";
+    TString output_matching = "/grid_mnt/data__data.polcms/cms/vernazza/CMSSW_10_2_1/src/TauTagAndProbe/TauTagAndProbe/test/PlotMatchingEfficiency/"+EventSample+"_MatchingEfficiency";
+    TString output_L1 = "/grid_mnt/data__data.polcms/cms/vernazza/CMSSW_10_2_1/src/TauTagAndProbe/TauTagAndProbe/test/PlotMatchingEfficiency/"+EventSample+"_L1Efficiency";
 
     system("mkdir -p "+output_matching);
     system("mkdir -p "+output_L1);
@@ -466,7 +671,7 @@ void PlotEfficiency(TString EventSample)
     set_of_on_cuts.push_back(trig_on);
     set_of_off_cuts.push_back(trig_off);
 
-    UInt_t nbins_muon = 50;
+    UInt_t nbins_muon = 30;
     UInt_t min_muon = 0;
     UInt_t max_muon = 100;
     TH1F* Total_Muon = new TH1F("Total_Muon", "Total_Muon", nbins_muon, min_muon, max_muon);
@@ -474,34 +679,31 @@ void PlotEfficiency(TString EventSample)
     TH1F* Offline_Muon = new TH1F("Offline_Muon", "Offline_Muon", nbins_muon, min_muon, max_muon);
     TH1F* L1_Offline_Muon = new TH1F("L1_Offline_Muon", "L1_Offline_Muon", nbins_muon, min_muon, max_muon);
 
-    UInt_t nbins_jet1 = 50;
+    UInt_t nbins_jet1 = 30;
     UInt_t min_jet1 = 0;
-    UInt_t max_jet1 = 300;
+    UInt_t max_jet1 = 400;
     TH1F* Total_Jet1 = new TH1F("Total_Jet1", "Total_Jet1", nbins_jet1, min_jet1, max_jet1);
     TH1F* Match_Jet1 = new TH1F("Match_Jet1", "Match_Jet1", nbins_jet1, min_jet1, max_jet1);
     TH1F* Offline_Jet1 = new TH1F("Offline_Jet1", "Offline_Jet1", nbins_jet1, min_jet1, max_jet1);
     TH1F* L1_Offline_Jet1 = new TH1F("L1_Offline_Jet1", "L1_Offline_Jet1", nbins_jet1, min_jet1, max_jet1);
 
-    UInt_t nbins_jet2 = 50;
+    UInt_t nbins_jet2 = 30;
     UInt_t min_jet2 = 0;
-    UInt_t max_jet2 = 100;
+    UInt_t max_jet2 = 200;
     TH1F* Total_Jet2 = new TH1F("Total_Jet2", "Total_Jet2", nbins_jet2, min_jet2, max_jet2);
     TH1F* Match_Jet2 = new TH1F("Match_Jet2", "Match_Jet2", nbins_jet2, min_jet2, max_jet2);
     TH1F* Offline_Jet2 = new TH1F("Offline_Jet2", "Offline_Jet2", nbins_jet2, min_jet2, max_jet2);
     TH1F* L1_Offline_Jet2 = new TH1F("L1_Offline_Jet2", "L1_Offline_Jet2", nbins_jet2, min_jet2, max_jet2);
 
-    UInt_t nbins_mjj = 50;
+    UInt_t nbins_mjj = 30;
     UInt_t min_mjj = 0;
-    UInt_t max_mjj = 5000;
+    UInt_t max_mjj = 3000;
     TH1F* Total_Mjj = new TH1F("Total_Mjj", "Total_Mjj", nbins_mjj, min_mjj, max_mjj);
     TH1F* Match_Mjj = new TH1F("Match_Mjj", "Match_Mjj", nbins_mjj, min_mjj, max_mjj);
     TH1F* Offline_Mjj = new TH1F("Offline_Mjj", "Offline_Mjj", nbins_mjj, min_mjj, max_mjj);
     TH1F* L1_Offline_Mjj = new TH1F("L1_Offline_Mjj", "L1_Offline_Mjj", nbins_mjj, min_mjj, max_mjj);
 
     UInt_t events_Total = 0;
-
-    // int n_files = int(system("ls -a "+Path_ntuples+"/*.root | wc -l"));
-    // cout << "Number of root files = " << n_files << endl;
 
     // loop over all events in the ntuples to check which one passes the VBF or MuTau selections
     for (int nt = 0 ; nt < 5 ; ++nt)
@@ -518,378 +720,27 @@ void PlotEfficiency(TString EventSample)
         for (UInt_t i_ev = 0 ; i_ev < inTree->GetEntries() ; ++i_ev)
         // for (UInt_t i_ev = 0 ; i_ev < 10000 ; ++i_ev)
           {
-            // PrintMuons(inTree, i_ev);
             CheckVBF(inTree, i_ev, set_of_on_cuts, set_of_off_cuts, Total_Muon, Match_Muon, Offline_Muon, L1_Offline_Muon, Total_Jet1, Match_Jet1, Offline_Jet1, L1_Offline_Jet1, Total_Jet2, Match_Jet2, Offline_Jet2, L1_Offline_Jet2, Total_Mjj, Match_Mjj, Offline_Mjj, L1_Offline_Mjj, JetSel30, JetIDType, Method);
           }
       }
 
-    // Plot matching turn on
+    // Plot turn on
 
-    TGraphAsymmErrors* TurnOn_Matching_Muon = new TGraphAsymmErrors(Match_Muon, Total_Muon, "cp");
+    PlotTurnOns (output_matching, "TurnOn_Matching_Muon", Match_Muon, Match_Muon, "Muon Matching Efficiency", "p_{T} Muon [GeV]", min_muon, max_muon, "matching");
+    PlotTurnOns (output_matching, "TurnOn_Matching_Jet1", Match_Jet1, Total_Jet1, "Jet1 Matching Efficiency", "p_{T}^{Jet1} [GeV]", min_jet1, max_jet1, "matching");
+    PlotTurnOns (output_matching, "TurnOn_Matching_Jet2", Match_Jet2, Total_Jet2, "Jet2 Matching Efficiency", "p_{T}^{Jet2} [GeV]", min_jet2, max_jet2, "matching");
+    PlotTurnOns (output_matching, "TurnOn_Matching_Mjj_all", Match_Mjj, Total_Mjj, "Mjj Matching Efficiency", "m_{jj} [GeV]", min_mjj, max_mjj, "matching");
 
-    TCanvas c1 ("c1", "c1", 900., 650.);
-    TurnOn_Matching_Muon->SetTitle("");
-    TurnOn_Matching_Muon->Draw("ALP");
-    TurnOn_Matching_Muon->GetXaxis()->SetTitle("p_{T} Muon [GeV]");
-    TurnOn_Matching_Muon->GetYaxis()->SetTitle("Muon Matching Efficiency");
-    c1.SaveAs(output_matching+"/TurnOn_Matching_Muon.png");
-    c1.SaveAs(output_matching+"/TurnOn_Matching_Muon.pdf");
-    c1.Close();
-
-    TGraphAsymmErrors* TurnOn_Matching_Jet1 = new TGraphAsymmErrors(Match_Jet1, Total_Jet1, "cp");
-
-    TCanvas c2 ("c2", "c2", 900., 650.);
-    TurnOn_Matching_Jet1->SetTitle();
-    TurnOn_Matching_Jet1->Draw("ALP");
-    TurnOn_Matching_Jet1->GetXaxis()->SetTitle("p_{T}^{Jet1} [GeV]");
-    TurnOn_Matching_Jet1->GetYaxis()->SetTitle("Jet1 Matching Efficiency");
-    c2.SaveAs(output_matching+"/TurnOn_Matching_Jet1.png");
-    c2.SaveAs(output_matching+"/TurnOn_Matching_Jet1.pdf");
-    c2.Close();
-
-    TGraphAsymmErrors* TurnOn_Matching_Jet2 = new TGraphAsymmErrors(Match_Jet2, Total_Jet2, "cp");
-
-    TCanvas c3 ("c3", "c3", 900., 650.);
-    TurnOn_Matching_Jet2->SetTitle();
-    TurnOn_Matching_Jet2->Draw("ALP");
-    TurnOn_Matching_Jet2->GetXaxis()->SetTitle("p_{T}^{Jet2} [GeV]");
-    TurnOn_Matching_Jet2->GetYaxis()->SetTitle("Jet2 Matching Efficiency");
-    c3.SaveAs(output_matching+"/TurnOn_Matching_Jet2.png");
-    c3.SaveAs(output_matching+"/TurnOn_Matching_Jet2.pdf");
-    c3.Close();
-
-    TGraphAsymmErrors* TurnOn_Matching_Mjj = new TGraphAsymmErrors(Match_Mjj, Total_Mjj, "cp");
-
-    TCanvas c4 ("c4", "c4", 900., 650.);
-    TurnOn_Matching_Mjj->SetTitle();
-    TurnOn_Matching_Mjj->Draw("ALP");
-    TurnOn_Matching_Mjj->GetXaxis()->SetTitle("m_{jj} [GeV]");
-    TurnOn_Matching_Mjj->GetYaxis()->SetTitle("Mjj Matching Efficiency");
-    c4.SaveAs(output_matching+"/TurnOn_Matching_Mjj.png");
-    c4.SaveAs(output_matching+"/TurnOn_Matching_Mjj.pdf");
-    c4.Close();
-
-    // Plot L1 turn on
-
-    TGraphAsymmErrors* TurnOn_L1_Muon = new TGraphAsymmErrors(L1_Offline_Muon, Offline_Muon, "cp");
-
-    TCanvas c5 ("c5", "c5", 900., 650.);
-
-    TPad* p1 = new TPad("p1", "", 0, 0, 1, 1);
-    p1->SetGrid();
-    p1->SetFillStyle(4000);
-    p1->SetFillColorAlpha(0, 0);
-    TPad* p2 = new TPad("p2", "", 0, 0, 1, 1);
-    p2->SetFillStyle(4000); // will be transparent
-    p2->SetFillColorAlpha(0, 0);
-    TPad* p3 = new TPad("p3", "", 0, 0, 1, 1);
-    p3->SetFillStyle(4000); // will be transparent
-    p3->SetFillColorAlpha(0, 0);
-
-    p1->Draw();
-    p1->cd();
-    TurnOn_L1_Muon->SetTitle(";p_{T} Muon [GeV];Muon L1 Efficiency");
-    TurnOn_L1_Muon->GetXaxis()->SetLimits(0.,50.);
-    TurnOn_L1_Muon->GetXaxis()->SetRangeUser(0,50.);
-    TurnOn_L1_Muon->GetYaxis()->SetRangeUser(0,1.25);
-    TurnOn_L1_Muon->GetXaxis()->SetLabelColor(kWhite);
-    TurnOn_L1_Muon->Draw("ALP");
-    TurnOn_L1_Muon->SetMarkerStyle(8);
-    TurnOn_L1_Muon->SetMarkerSize(0.75);
-    TurnOn_L1_Muon->SetMarkerColor(1);
-    TurnOn_L1_Muon->SetLineColor(1);
-    TurnOn_L1_Muon->SetFillColor(3);
-    TurnOn_L1_Muon->GetHistogram()->SetStats(0);
-
-    Style_t tfont = TurnOn_L1_Muon->GetHistogram()->GetYaxis()->GetTitleFont();
-    Float_t tsize = TurnOn_L1_Muon->GetHistogram()->GetYaxis()->GetTitleSize();
-    Style_t lfont = TurnOn_L1_Muon->GetHistogram()->GetYaxis()->GetLabelFont();
-    Float_t lsize = TurnOn_L1_Muon->GetHistogram()->GetYaxis()->GetLabelSize();
-
-    // Double_t xmin = p1->GetUxmin();
-    // Double_t xmax = p1->GetUxmax();
-    Double_t xmin = 0;
-    Double_t xmax = 50;
-    Double_t dx = (xmax - xmin) / 0.8; // 10 percent margins left and right
-    Double_t ymin = TurnOn_L1_Muon->GetMinimum();
-    Double_t ymax = TurnOn_L1_Muon->GetMaximum();
-    Double_t dy = (ymax - ymin) / 0.8; // 10 percent margins top and bottom
-    // p2->Range(xmin-0.1*dx, ymin-0.1*dy, xmax+0.1*dx, ymax+0.1*dy);
-    p1->Range(xmin, ymin-0.1*dy, xmax, ymax+0.1*dy);
-    p2->Range(xmin, ymin-0.1*dy, xmax, ymax+0.1*dy);
-    p2->Draw();
-    p2->cd();
-    L1_Offline_Muon->SetTitle("");
-    L1_Offline_Muon->Draw("Y+");
-    L1_Offline_Muon->GetXaxis()->SetRangeUser(0,50);
-    L1_Offline_Muon->GetYaxis()->SetRangeUser(0, 1.3*L1_Offline_Muon->GetMaximum());
-    // L1_Offline_Muon->GetXaxis()->SetLabelColor(kRed);
-    L1_Offline_Muon->SetLineWidth(3);
-    L1_Offline_Muon->SetLineColor(kMagenta);
-    L1_Offline_Muon->SetStats(0);
-    Offline_Muon->Draw("same");
-    Offline_Muon->GetYaxis()->SetRangeUser(0, 1.3*L1_Offline_Muon->GetMaximum());
-    Offline_Muon->SetLineWidth(3);
-    Offline_Muon->SetLineColor(kAzure);
-    Offline_Muon->SetStats(0);
-
-    TGaxis *axis = new TGaxis(xmax, ymin, xmax, ymax, ymin, ymax, 50510, "+L");
-    axis->SetTitle("Events");
-    axis->SetTitleFont(tfont);
-    axis->SetTitleSize(tsize);
-    // axis->SetTitleColor(kRed);
-    axis->SetTitleOffset(1.25);
-    axis->SetLabelFont(lfont);
-    axis->SetLabelSize(lsize);
-    // axis->SetLabelColor(kRed);
-    // axis->SetLineColor(kRed);
-    axis->Draw();
-    
-    TLegend *leg = new TLegend(0.55, 0.77, 0.89, 0.89);
-    leg->SetFillColor(0);
-    leg->SetTextFont(lfont);
-    leg->SetTextSize(lsize);
-    // leg->SetTextAlign(22);
-    leg->AddEntry(TurnOn_L1_Muon, "L1 Efficiency Turn on", "L");
-    leg->AddEntry(L1_Offline_Muon, "Passing Reco", "L");
-    leg->AddEntry(Offline_Muon, "Passing Reco & L1", "L");
-    leg->Draw();
-
-    c5.SaveAs(output_L1+"/TurnOn_L1_Muon.png");
-    c5.SaveAs(output_L1+"/TurnOn_L1_Muon.pdf");
-    c5.Close();
-
-    TGraphAsymmErrors* TurnOn_L1_Jet1 = new TGraphAsymmErrors(L1_Offline_Jet1, Offline_Jet1, "cp");
-
-    TCanvas c6 ("c6", "c6", 900., 650.);
-    TurnOn_L1_Jet1->SetTitle("");
-    TurnOn_L1_Jet1->Draw("ALP");
-    TurnOn_L1_Jet1->GetXaxis()->SetTitle("p_{T}^{Jet1} [GeV]");
-    TurnOn_L1_Jet1->GetYaxis()->SetTitle("Jet1 L1 Efficiency");
-    c6.SaveAs(output_L1+"/TurnOn_L1_Jet1.png");
-    c6.SaveAs(output_L1+"/TurnOn_L1_Jet1.pdf");
-    c6.Close();
-
-    TGraphAsymmErrors* TurnOn_L1_Jet2 = new TGraphAsymmErrors(L1_Offline_Jet2, Offline_Jet2, "cp");
-
-    TCanvas c7 ("c7", "c7", 900., 650.);
-    TurnOn_L1_Jet2->SetTitle("");
-    TurnOn_L1_Jet2->Draw("ALP");
-    TurnOn_L1_Jet2->GetXaxis()->SetTitle("p_{T}^{Jet2} [GeV]");
-    TurnOn_L1_Jet2->GetYaxis()->SetTitle("Jet2 L1 Efficiency");
-    c7.SaveAs(output_L1+"/TurnOn_L1_Jet2.png");
-    c7.SaveAs(output_L1+"/TurnOn_L1_Jet2.pdf");
-    c7.Close();
-
-    TGraphAsymmErrors* TurnOn_L1_Mjj = new TGraphAsymmErrors(L1_Offline_Mjj, Offline_Mjj, "cp");
-
-    TCanvas c8 ("c8", "c8", 900., 650.);
-    TurnOn_L1_Mjj->SetTitle("");
-    TurnOn_L1_Mjj->Draw("ALP");
-    TurnOn_L1_Mjj->GetXaxis()->SetTitle("m_{jj} [GeV]");
-    TurnOn_L1_Mjj->GetYaxis()->SetTitle("Mjj L1 Efficiency");
-    c8.SaveAs(output_L1+"/TurnOn_L1_Mjj.png");
-    c8.SaveAs(output_L1+"/TurnOn_L1_Mjj.pdf");
-    c8.Close();
+    PlotTurnOns (output_L1, "TurnOn_L1_Muon_all", L1_Offline_Muon, Offline_Muon, "Muon L1 Efficiency", "p_{T} Muon [GeV]", min_muon, max_muon, "l1");
+    PlotTurnOns (output_L1, "TurnOn_L1_Jet1_all", L1_Offline_Jet1, Offline_Jet1, "Jet1 L1 Efficiency", "p_{T}^{Jet1} [GeV]", min_jet1, max_jet1, "l1");
+    PlotTurnOns (output_L1, "TurnOn_L1_Jet2_all", L1_Offline_Jet2, Offline_Jet2, "Jet2 L1 Efficiency", "p_{T}^{Jet2} [GeV]", min_jet2, max_jet2, "l1");
+    PlotTurnOns (output_L1, "TurnOn_L1_Mjj_all",  L1_Offline_Mjj, Offline_Mjj, "Mjj L1 Efficiency", "m_{jj} [GeV]", min_mjj, max_mjj, "l1");
 
     // Plot distributions
 
-    TCanvas c11 ("c11", "c11", 900., 650.);
-    c11.cd();
-    c11.SetGrid(10,10);
-
-    Match_Muon->Draw();
-    Match_Muon->SetLineWidth(2);
-    Match_Muon->SetLineColor(3);
-    Total_Muon->Draw("same");
-    Total_Muon->SetLineWidth(2);
-    Total_Muon->SetLineColor(6);
-    L1_Offline_Muon->Draw("same");
-    L1_Offline_Muon->SetLineWidth(2);
-    L1_Offline_Muon->SetLineColor(4);
-    Offline_Muon->Draw("same");
-    Offline_Muon->SetLineWidth(2);
-    Offline_Muon->SetLineColor(95);
-
-    Match_Muon->GetXaxis()->SetTitle("p_{T}^{Offline} (muon) [GeV]");
-    Match_Muon->SetTitle("");
-    Match_Muon->GetYaxis()->SetRangeUser(0.01,1.2*std::max(std::max(Match_Muon->GetMaximum(),Total_Muon->GetMaximum()),std::max(L1_Offline_Muon->GetMaximum(),Offline_Muon->GetMaximum())));
-    Match_Muon->GetXaxis()->SetTitleOffset(1.3);
-    Match_Muon->GetYaxis()->SetTitle("# Entries");
-    Match_Muon->GetYaxis()->SetTitleOffset(1.3);
-    Match_Muon->SetStats(0);
-
-    TLegend Legend11 (0.65,0.15,0.88,0.35);
-    Legend11.SetBorderSize(0);
-    Legend11.AddEntry(Match_Muon, "Inclusive", "LPE");
-    Legend11.AddEntry(Total_Muon, "Passing Matching", "LPE");
-    Legend11.AddEntry(L1_Offline_Muon, "Passing Online+Matching+Offline", "LPE");
-    Legend11.AddEntry(Offline_Muon, "Passing Offline", "LPE");
-    Legend11.Draw();
-
-    TLatex Tex1;
-    Tex1.SetTextSize(0.03);
-    Tex1.DrawLatexNDC(0.11,0.91,"#scale[1.5]{CMS} Simulation");
-    Tex1.Draw("same");
-
-    TLatex Tex2;
-    Tex2.SetTextSize(0.035);
-    Tex2.SetTextAlign(31);
-    Tex2.DrawLatexNDC(0.90,0.91,"(14 TeV)");
-    Tex2.Draw("same");
-
-    c11.SaveAs(output_matching+"/MuonDistribution.png");
-    c11.SaveAs(output_matching+"/MuonDistribution.pdf");
-    c11.SetLogy();
-    c11.SaveAs(output_matching+"/MuonDistribution_logY.png");
-    c11.SaveAs(output_matching+"/MuonDistribution_logY.pdf");
-    c11.Close();
-
-    TCanvas c22 ("c22", "c22", 900., 650.);
-    c22.cd();
-    c22.SetGrid(10,10);
-    c22.SetLogy();
-
-    Match_Jet1->Draw();
-    Match_Jet1->SetLineWidth(2);
-    Match_Jet1->SetLineColor(3);
-    Total_Jet1->Draw("same");
-    Total_Jet1->SetLineWidth(2);
-    Total_Jet1->SetLineColor(6);
-    L1_Offline_Jet1->Draw("same");
-    L1_Offline_Jet1->SetLineWidth(2);
-    L1_Offline_Jet1->SetLineColor(4);
-    Offline_Jet1->Draw("same");
-    Offline_Jet1->SetLineWidth(2);
-    Offline_Jet1->SetLineColor(95);
-
-    Match_Jet1->GetXaxis()->SetTitle("p_{T}^{Offline}(jet1) [GeV]");
-    Match_Jet1->SetTitle("");
-    Match_Jet1->GetYaxis()->SetRangeUser(0.01,1.2*std::max(std::max(Match_Jet1->GetMaximum(),Total_Jet1->GetMaximum()),std::max(L1_Offline_Jet1->GetMaximum(),Offline_Jet1->GetMaximum())));
-    Match_Jet1->GetXaxis()->SetTitleOffset(1.3);
-    Match_Jet1->GetYaxis()->SetTitle("# Entries");
-    Match_Jet1->GetYaxis()->SetTitleOffset(1.3);
-    Match_Jet1->SetStats(0);
-
-    TLegend Legend22 (0.65,0.15,0.88,0.35);
-    Legend22.SetBorderSize(0);
-    Legend22.AddEntry(Match_Jet1, "Inclusive", "LPE");
-    Legend22.AddEntry(Total_Jet1, "Passing Matching", "LPE");
-    Legend22.AddEntry(L1_Offline_Jet1, "Passing Online+Matching+Offline", "LPE");
-    Legend22.AddEntry(Offline_Jet1, "Passing Offline", "LPE");
-    Legend22.Draw();
-
-    // TLatex Tex1;
-    Tex1.SetTextSize(0.03);
-    Tex1.DrawLatexNDC(0.11,0.91,"#scale[1.5]{CMS} Simulation");
-    Tex1.Draw("same");
-
-    // TLatex Tex2;
-    Tex2.SetTextSize(0.035);
-    Tex2.SetTextAlign(31);
-    Tex2.DrawLatexNDC(0.90,0.91,"(14 TeV)");
-    Tex2.Draw("same");
-
-    c22.SaveAs(output_matching+"/Jet1Distribution.png");
-    c22.SaveAs(output_matching+"/Jet1Distribution.pdf");
-    c22.Close();
-
-    TCanvas c33 ("c33", "c33", 900., 650.);
-    c33.cd();
-    c33.SetGrid(10,10);
-    c33.SetLogy();
-
-    Match_Jet2->Draw();
-    Match_Jet2->SetLineWidth(2);
-    Match_Jet2->SetLineColor(3);
-    Total_Jet2->Draw("same");
-    Total_Jet2->SetLineWidth(2);
-    Total_Jet2->SetLineColor(6);
-    L1_Offline_Jet2->Draw("same");
-    L1_Offline_Jet2->SetLineWidth(2);
-    L1_Offline_Jet2->SetLineColor(4);
-    Offline_Jet2->Draw("same");
-    Offline_Jet2->SetLineWidth(2);
-    Offline_Jet2->SetLineColor(95);
-
-    Match_Jet2->GetXaxis()->SetTitle("p_{T}^{Offline}(jet2) [GeV]");
-    Match_Jet2->SetTitle("");
-    Match_Jet2->GetYaxis()->SetRangeUser(0.01,1.2*std::max(std::max(Match_Jet2->GetMaximum(),Total_Jet2->GetMaximum()),std::max(L1_Offline_Jet2->GetMaximum(),Offline_Jet2->GetMaximum())));
-    Match_Jet2->GetXaxis()->SetTitleOffset(1.3);
-    Match_Jet2->GetYaxis()->SetTitle("# Entries");
-    Match_Jet2->GetYaxis()->SetTitleOffset(1.3);
-    Match_Jet2->SetStats(0);
-
-    TLegend Legend33 (0.65,0.15,0.88,0.35);
-    Legend33.SetBorderSize(0);
-    Legend33.AddEntry(Match_Jet2, "Inclusive", "LPE");
-    Legend33.AddEntry(Total_Jet2, "Passing Matching", "LPE");
-    Legend33.AddEntry(L1_Offline_Jet2, "Passing Online+Matching+Offline", "LPE");
-    Legend33.AddEntry(Offline_Jet2, "Passing Offline", "LPE");
-    Legend33.Draw();
-
-    // TLatex Tex1;
-    Tex1.SetTextSize(0.03);
-    Tex1.DrawLatexNDC(0.11,0.91,"#scale[1.5]{CMS} Simulation");
-    Tex1.Draw("same");
-
-    // TLatex Tex2;
-    Tex2.SetTextSize(0.035);
-    Tex2.SetTextAlign(31);
-    Tex2.DrawLatexNDC(0.90,0.91,"(14 TeV)");
-    Tex2.Draw("same");
-
-    c33.SaveAs(output_matching+"/Jet2Distribution.png");
-    c33.SaveAs(output_matching+"/Jet2Distribution.pdf");
-    c33.Close();
-
-    TCanvas c44 ("c44", "c44", 900., 650.);
-    c44.cd();
-    c44.SetGrid(10,10);
-    c44.SetLogy();
-
-    Match_Mjj->Draw();
-    Match_Mjj->SetLineWidth(2);
-    Match_Mjj->SetLineColor(3);
-    Total_Mjj->Draw("same");
-    Total_Mjj->SetLineWidth(2);
-    Total_Mjj->SetLineColor(6);
-    L1_Offline_Mjj->Draw("same");
-    L1_Offline_Mjj->SetLineWidth(2);
-    L1_Offline_Mjj->SetLineColor(4);
-    Offline_Mjj->Draw("same");
-    Offline_Mjj->SetLineWidth(2);
-    Offline_Mjj->SetLineColor(95);
-
-    Match_Mjj->GetXaxis()->SetTitle("m_{jj} [GeV]");
-    Match_Mjj->SetTitle("");
-    Match_Mjj->GetYaxis()->SetRangeUser(0.01,1.2*std::max(std::max(Match_Mjj->GetMaximum(),Total_Mjj->GetMaximum()),std::max(L1_Offline_Mjj->GetMaximum(),Offline_Mjj->GetMaximum())));
-    Match_Mjj->GetXaxis()->SetTitleOffset(1.3);
-    Match_Mjj->GetYaxis()->SetTitle("# Entries");
-    Match_Mjj->GetYaxis()->SetTitleOffset(1.3);
-    Match_Mjj->SetStats(0);
-
-    TLegend Legend44 (0.65,0.15,0.88,0.35);
-    Legend44.SetBorderSize(0);
-    Legend44.AddEntry(Match_Mjj, "Inclusive", "LPE");
-    Legend44.AddEntry(Total_Mjj, "Passing Matching", "LPE");
-    Legend44.AddEntry(L1_Offline_Mjj, "Passing Online+Matching+Offline", "LPE");
-    Legend44.AddEntry(Offline_Mjj, "Passing Offline", "LPE");
-    Legend44.Draw();
-
-    // TLatex Tex1;
-    Tex1.SetTextSize(0.03);
-    Tex1.DrawLatexNDC(0.11,0.91,"#scale[1.5]{CMS} Simulation");
-    Tex1.Draw("same");
-
-    // TLatex Tex2;
-    Tex2.SetTextSize(0.035);
-    Tex2.SetTextAlign(31);
-    Tex2.DrawLatexNDC(0.90,0.91,"(14 TeV)");
-    Tex2.Draw("same");
-
-    c44.SaveAs(output_matching+"/MjjDistribution.png");
-    c44.SaveAs(output_matching+"/MjjDistribution.pdf");
-    c44.Close();
-
+    PlotDistributions (output_matching, Total_Muon, Match_Muon, Offline_Muon, L1_Offline_Muon, "MuonDistribution", "p_{T}^{Offline} (muon) [GeV]");
+    PlotDistributions (output_matching, Total_Jet1, Match_Jet1, Offline_Jet1, L1_Offline_Jet1, "Jet1Distribution", "p_{T}^{Offline}(jet1) [GeV]");
+    PlotDistributions (output_matching, Total_Jet2, Match_Jet2, Offline_Jet2, L1_Offline_Jet2, "Jet2Distribution", "p_{T}^{Offline}(jet2) [GeV]");
+    PlotDistributions (output_matching, Total_Mjj, Match_Mjj, Offline_Mjj, L1_Offline_Mjj, "MjjDistribution", "m_{jj}^{Offline} [GeV]");
+    
   }

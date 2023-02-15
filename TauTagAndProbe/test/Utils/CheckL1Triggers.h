@@ -7,6 +7,21 @@ bool CheckMuonQuality (float in_l1tMuQual);
 
 bool CheckGoodJet (int in_JetID, TString JetIDType);
 
+// void ReadOneVBFEvents (TTree* inTree, 
+//                 UInt_t  i_ev, 
+//                 TString JetIDType, 
+//                 TString Method, 
+//                 bool JetSel30,
+//                 TLorentzVector* myGoodOfflineTau,
+//                 TLorentzVector* myGoodOfflineMuon, 
+//                 TLorentzVector* myGoodOfflineJet1, 
+//                 TLorentzVector* myGoodOfflineJet2, 
+//                 TLorentzVector* myGoodOfflineDiJet, 
+//                 TLorentzVector* myGoodOnlineMuon, 
+//                 TLorentzVector* myGoodOnlineJet1, 
+//                 TLorentzVector* myGoodOnlineJet2, 
+//                 TLorentzVector* myGoodOnlineDiJet);
+
 void CheckVBF_vs_MuTau (TTree* inTree, 
                 UInt_t  i_ev, 
                 vector<array<Float_t, 4>> set_of_on_cuts, 

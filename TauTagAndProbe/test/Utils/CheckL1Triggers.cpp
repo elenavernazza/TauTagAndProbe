@@ -57,6 +57,284 @@ bool CheckGoodJet (int in_JetID, TString JetIDType)
     else return false;
   }
 
+// void ReadOneVBFEvents (TTree* inTree, UInt_t  i_ev, TString JetIDType, TString Method, bool JetSel30, TLorentzVector* myGoodOfflineTau,
+//                   TLorentzVector* myGoodOfflineMuon, TLorentzVector* myGoodOfflineJet1, TLorentzVector* myGoodOfflineJet2, TLorentzVector* myGoodOfflineDiJet, 
+//                   TLorentzVector* myGoodOnlineMuon, TLorentzVector* myGoodOnlineJet1, TLorentzVector* myGoodOnlineJet2, TLorentzVector* myGoodOnlineDiJet)
+//   {
+
+//     ULong64_t       in_EventNumber =  0;
+//     Int_t           in_RunNumber =  0;
+//     Int_t           in_lumi =  0;
+//     vector<float>   *in_PxJet = 0;
+//     vector<float>   *in_PyJet = 0;
+//     vector<float>   *in_PzJet = 0;
+//     vector<float>   *in_IDJet = 0;
+//     vector<float>   *in_l1tPtJet = 0;
+//     vector<float>   *in_l1tEtaJet = 0;
+//     vector<float>   *in_l1tPhiJet = 0;
+//     vector<float>   *in_MuPt = 0;
+//     vector<float>   *in_MuEta = 0;
+//     vector<float>   *in_MuPhi = 0;
+//     vector<bool>    *in_MuIso = 0;
+//     vector<int>     *in_MuID = 0;
+//     vector<float>   *in_l1tMuPt = 0;
+//     vector<float>   *in_l1tMuEta = 0;
+//     vector<float>   *in_l1tMuPhi = 0;
+//     vector<float>   *in_l1tMuQual = 0;
+//     vector<float>   *in_tauPt = 0;
+//     vector<float>   *in_tauEta = 0;
+//     vector<float>   *in_tauPhi = 0;
+//     vector<float>   *in_l1tauPt = 0;
+//     vector<float>   *in_l1tauEta = 0;
+//     vector<float>   *in_l1tauPhi = 0;
+
+//     inTree->SetBranchAddress("EventNumber", &in_EventNumber);
+//     inTree->SetBranchAddress("RunNumber", &in_RunNumber);
+//     inTree->SetBranchAddress("lumi", &in_lumi);
+//     inTree->SetBranchAddress("jets_px", &in_PxJet);
+//     inTree->SetBranchAddress("jets_py", &in_PyJet);
+//     inTree->SetBranchAddress("jets_pz", &in_PzJet);
+//     inTree->SetBranchAddress("jets_ID", &in_IDJet);
+//     inTree->SetBranchAddress("l1tPtJet", &in_l1tPtJet);
+//     inTree->SetBranchAddress("l1tEtaJet", &in_l1tEtaJet);
+//     inTree->SetBranchAddress("l1tPhiJet", &in_l1tPhiJet);
+//     inTree->SetBranchAddress("muons_pt", &in_MuPt);
+//     inTree->SetBranchAddress("muons_eta", &in_MuEta);
+//     inTree->SetBranchAddress("muons_phi", &in_MuPhi);
+//     inTree->SetBranchAddress("muons_PFIsoTight", &in_MuIso);
+//     inTree->SetBranchAddress("muons_type", &in_MuID);
+//     inTree->SetBranchAddress("l1t_muons_pt", &in_l1tMuPt);
+//     inTree->SetBranchAddress("l1t_muons_eta", &in_l1tMuEta);
+//     inTree->SetBranchAddress("l1t_muons_phi", &in_l1tMuPhi);
+//     inTree->SetBranchAddress("l1t_muons_qual", &in_l1tMuQual);
+//     inTree->SetBranchAddress("tauPt", &in_tauPt);
+//     inTree->SetBranchAddress("tauEta", &in_tauEta);
+//     inTree->SetBranchAddress("tauPhi", &in_tauPhi);
+//     inTree->SetBranchAddress("l1tPt", &in_l1tauPt);
+//     inTree->SetBranchAddress("l1tEta", &in_l1tauEta);
+//     inTree->SetBranchAddress("l1tPhi", &in_l1tauPhi);
+
+//     inTree->GetEntry(i_ev);
+
+//     // remove taus that are matched with jets within deltaR < 0.5
+//     vector <bool> jet_is_matched_to_tau;
+//     jet_is_matched_to_tau.clear();
+
+//     for (UInt_t ijet = 0; ijet < in_PxJet->size(); ++ijet)
+//       {
+//         TLorentzVector local_jet;
+//         Float_t jet_energy = sqrt(pow(in_PxJet->at(ijet),2)+pow(in_PyJet->at(ijet),2)+pow(in_PzJet->at(ijet),2));
+//         local_jet.SetPxPyPzE(in_PxJet->at(ijet), in_PyJet->at(ijet), in_PzJet->at(ijet), jet_energy);
+
+//         bool isMatched = false;
+//         for (UInt_t itau = 0; itau < in_tauPt->size(); ++itau)
+//           {
+//             TLorentzVector local_tau;
+//             local_tau.SetPtEtaPhiM(in_tauPt->at(itau), in_tauEta->at(itau), in_tauPhi->at(itau), 0.);
+//             if (local_tau.Pt()<10.) continue;
+//             if (local_tau.DeltaR(local_jet) < 0.5)
+//               {
+//                 isMatched = true;
+//                 break;
+//               }
+//           }
+//         jet_is_matched_to_tau.push_back(isMatched);
+//       }
+
+//     // Check if there are at least 2 jets, 1 tau and 1 mu both in the online and offline objects
+//     bool offline_objects_VBF = in_PxJet->size() > 1 && in_MuPt->size() > 0;
+//     bool offline_objects_MuTau = in_tauPt->size() > 0 ;
+//     bool L1_objects_VBF = in_l1tPtJet->size() > 1 && in_l1tMuPt->size() > 0 ;
+
+//     // if (offline_objects_VBF && L1_objects_VBF && offline_objects_MuTau)
+//     //   {
+
+//     bool check_VBF = false; // this has to be inside the loop
+//     bool check_VBF_online = false;
+//     bool check_VBF_offline = false;
+//     bool check_mu_matching = false;
+//     bool check_jet1_matching = false;
+//     bool check_jet2_matching = false;
+
+//     myGoodOfflineTau->SetPtEtaPhiM(in_tauPt->at(0), in_tauEta->at(0), in_tauPhi->at(0), 1.776);
+
+    // for (UInt_t i_mu = 0 ; i_mu < in_MuPt->size() ; ++i_mu)
+    //   {
+    //     if (check_mu_matching) break;
+    //     if (CheckGoodMuon(in_MuIso->at(i_mu), in_MuID->at(i_mu))) // Isolation and identification of muons
+    //       {
+    //         TLorentzVector myOfflineMuon;
+    //         myOfflineMuon.SetPtEtaPhiM(in_MuPt->at(i_mu), in_MuEta->at(i_mu), in_MuPhi->at(i_mu), 0.105);
+
+    //         for (UInt_t i_L1_mu = 0 ; i_L1_mu < in_l1tMuPt->size() ; ++i_L1_mu)
+    //           {
+    //             if (check_mu_matching) break;
+    //             if (CheckMuonQuality(int(in_l1tMuQual->at(i_L1_mu))) == false) continue;
+    //             TLorentzVector myOnlineMuon;
+    //             myOnlineMuon.SetPtEtaPhiM(in_l1tMuPt->at(i_L1_mu), in_l1tMuEta->at(i_L1_mu), in_l1tMuPhi->at(i_L1_mu), 0.105);
+    //             if (myOfflineMuon.DeltaR(myOnlineMuon) < 0.3)
+    //               {
+    //                 myGoodOfflineMuon = myOfflineMuon;
+    //                 myGoodOnlineMuon = myOnlineMuon;
+    //                 check_mu_matching = true;
+    //                 break;
+    //               }
+    //           }
+    //       }
+    //   }
+
+    // Float_t highest_mjj_offline = -99;
+    // int myGoodOfflineJet1Index = -1;
+    // int myGoodOfflineJet2Index = -1;
+    // int myGoodOnlineJet1Index = -1;
+    // int myGoodOnlineJet2Index = -1;
+
+    // ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // /////////////////////////////// Way 1 /////////////////////////////////
+    // /////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
+
+    // if (Method == "Way1")
+    //   {
+    //     // find the two jets giving highest mjj among jets with pt > 30
+    //     for (UInt_t i_jet1 = 0 ; i_jet1 < in_PxJet->size() ; ++i_jet1)
+    //       {
+    //         if (jet_is_matched_to_tau.at(i_jet1) == true) continue;
+    //         if (CheckGoodJet(in_IDJet->at(i_jet1), JetIDType) == false) continue;
+    //         Float_t jet1_energy = sqrt(pow(in_PxJet->at(i_jet1),2)+pow(in_PyJet->at(i_jet1),2)+pow(in_PzJet->at(i_jet1),2));
+    //         TLorentzVector myOfflineJet1;
+    //         myOfflineJet1.SetPxPyPzE(in_PxJet->at(i_jet1), in_PyJet->at(i_jet1), in_PzJet->at(i_jet1), jet1_energy);
+    //         if (JetSel30) {if (myOfflineJet1.Pt() < 30) continue;}
+    //         for (UInt_t i_jet2 = i_jet1 + 1 ; i_jet2 < in_PxJet->size()-1 ; ++i_jet2)
+    //           {
+    //             if (jet_is_matched_to_tau.at(i_jet2) == true) continue;
+    //             if (CheckGoodJet(in_IDJet->at(i_jet2), JetIDType) == false) continue;
+    //             Float_t jet2_energy = sqrt(pow(in_PxJet->at(i_jet2),2)+pow(in_PyJet->at(i_jet2),2)+pow(in_PzJet->at(i_jet2),2));
+    //             TLorentzVector myOfflineJet2;
+    //             myOfflineJet2.SetPxPyPzE(in_PxJet->at(i_jet2), in_PyJet->at(i_jet2), in_PzJet->at(i_jet2), jet2_energy);
+    //             if (JetSel30) {if (myOfflineJet2.Pt() < 30) continue;}
+    //             TLorentzVector myOfflineDiJet;
+    //             myOfflineDiJet = myOfflineJet1 + myOfflineJet2;
+    //             if (myOfflineDiJet.M() > highest_mjj_offline)
+    //               {
+    //                 myGoodOfflineJet1 = myOfflineJet1;
+    //                 myGoodOfflineJet1Index = i_jet1;
+    //                 myGoodOfflineJet2 = myOfflineJet2;
+    //                 myGoodOfflineJet2Index = i_jet2;
+    //                 myGoodOfflineDiJet = myGoodOfflineJet1 + myGoodOfflineJet2;
+    //                 highest_mjj_offline = myGoodOfflineDiJet.M();
+    //               }
+    //           }
+    //       }
+
+    //     for (UInt_t i_L1_jet1 = 0 ; i_L1_jet1 < in_l1tPtJet->size() ; ++i_L1_jet1)
+    //       {
+    //         if (check_jet1_matching) break;
+    //         TLorentzVector myOnlineJet1;
+    //         myOnlineJet1.SetPtEtaPhiM(in_l1tPtJet->at(i_L1_jet1), in_l1tEtaJet->at(i_L1_jet1), in_l1tPhiJet->at(i_L1_jet1), 0);
+    //         if (myGoodOfflineJet1.DeltaR(myOnlineJet1) < 0.5)
+    //           {
+    //             myGoodOnlineJet1 = myOnlineJet1;
+    //             myGoodOnlineJet1Index = i_L1_jet1;
+    //             check_jet1_matching = true;
+    //             break;
+    //           }
+    //       }
+
+    //     for (UInt_t i_L1_jet2 = 0 ; i_L1_jet2 < in_l1tPtJet->size() ; ++i_L1_jet2)
+    //       {
+    //         if (check_jet2_matching) break;
+    //         if (int(i_L1_jet2) != myGoodOnlineJet1Index)
+    //           {
+    //             TLorentzVector myOnlineJet2;
+    //             myOnlineJet2.SetPtEtaPhiM(in_l1tPtJet->at(i_L1_jet2), in_l1tEtaJet->at(i_L1_jet2), in_l1tPhiJet->at(i_L1_jet2), 0);
+    //             if (myGoodOfflineJet2.DeltaR(myOnlineJet2) < 0.5)
+    //               {
+    //                 myGoodOnlineJet2 = myOnlineJet2;
+    //                 myGoodOnlineJet2Index = i_L1_jet2;
+    //                 check_jet2_matching = true;
+    //                 break;
+    //               }
+    //           }
+    //       }
+
+    //     myGoodOnlineDiJet = myGoodOnlineJet1 + myGoodOnlineJet2;
+
+    //   }
+
+    // ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // /////////////////////////////// Way 2 /////////////////////////////////
+    // ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // if (Method == "Way2")
+    //   {
+
+    //     for (UInt_t i_jet1 = 0 ; i_jet1 < in_PxJet->size()-1 ; ++i_jet1)
+    //       {
+    //         if (check_jet1_matching && check_jet2_matching) break;
+    //         if (jet_is_matched_to_tau.at(i_jet1) == true) continue;
+    //         if (CheckGoodJet(in_IDJet->at(i_jet1), JetIDType) == false) continue;
+
+    //         // compute jet 1 energy from px, py, pz information assuming jet mass to 0
+    //         Float_t jet1_energy = sqrt(pow(in_PxJet->at(i_jet1),2)+pow(in_PyJet->at(i_jet1),2)+pow(in_PzJet->at(i_jet1),2));
+    //         // definition of Lorentz vector for offline jet 1 (px, py, pz, E [GeV])
+    //         TLorentzVector myOfflineJet1;
+    //         myOfflineJet1.SetPxPyPzE(in_PxJet->at(i_jet1), in_PyJet->at(i_jet1), in_PzJet->at(i_jet1), jet1_energy);
+    //         if (JetSel30) {if (myOfflineJet1.Pt() < 30) continue;}
+
+    //         for (UInt_t i_jet2 = i_jet1+1 ; i_jet2 < in_PxJet->size() ; ++i_jet2)
+    //           {
+    //             if (check_jet1_matching && check_jet2_matching) break;
+    //             if (CheckGoodJet(in_IDJet->at(i_jet2), JetIDType) == false) continue;
+    //             // compute jet 2 energy from px, py, pz information assuming jet mass to 0
+    //             Float_t jet2_energy = sqrt(pow(in_PxJet->at(i_jet2),2)+pow(in_PyJet->at(i_jet2),2)+pow(in_PzJet->at(i_jet2),2));
+    //             // definition of Lorentz vector for offline jet 2 (px, py, pz, E [GeV])
+    //             TLorentzVector myOfflineJet2;
+    //             myOfflineJet2.SetPxPyPzE(in_PxJet->at(i_jet2), in_PyJet->at(i_jet2), in_PzJet->at(i_jet2), jet2_energy);
+    //             if (JetSel30) {if (myOfflineJet2.Pt() < 30) continue;}
+
+    //             for (UInt_t i_L1_jet1 = 0 ; i_L1_jet1 < in_l1tPtJet->size() ; ++i_L1_jet1)
+    //               {
+
+    //                 if (check_jet1_matching && check_jet2_matching) break;
+    //                 // definition of Lorentz vector for online jet 1 (pt, eta, phi, mass [GeV])
+    //                 TLorentzVector myOnlineJet1;
+    //                 myOnlineJet1.SetPtEtaPhiM(in_l1tPtJet->at(i_L1_jet1), in_l1tEtaJet->at(i_L1_jet1), in_l1tPhiJet->at(i_L1_jet1), 0);
+
+    //                 for (UInt_t i_L1_jet2 = i_L1_jet1+1 ; i_L1_jet2 < in_l1tPtJet->size() ; ++i_L1_jet2)
+    //                   {
+
+    //                     if (check_jet1_matching && check_jet2_matching) break;
+    //                     // definition of Lorentz vector for online jet 2 (pt, eta, phi, mass [GeV])
+    //                     TLorentzVector myOnlineJet2;
+    //                     myOnlineJet2.SetPtEtaPhiM(in_l1tPtJet->at(i_L1_jet2), in_l1tEtaJet->at(i_L1_jet2), in_l1tPhiJet->at(i_L1_jet2), 0);
+
+    //                     // check matching based on deltaR between online and offline object
+    //                     if (myOfflineJet1.DeltaR(myOnlineJet1) < 0.5 && myOfflineJet2.DeltaR(myOnlineJet2) < 0.5)
+    //                       {
+    //                         myGoodOfflineJet1 = myOfflineJet1;
+    //                         myGoodOfflineJet1Index = i_jet1;
+    //                         myGoodOfflineJet2 = myOfflineJet2;
+    //                         myGoodOfflineJet2Index = i_jet2;
+    //                         myGoodOfflineDiJet = myGoodOfflineJet1 + myGoodOfflineJet2;
+
+    //                         myGoodOnlineJet1 = myOnlineJet1;
+    //                         myGoodOnlineJet1Index = i_L1_jet1;
+    //                         myGoodOnlineJet2 = myOnlineJet2;
+    //                         myGoodOnlineJet2Index = i_L1_jet2;
+    //                         myGoodOnlineDiJet = myGoodOnlineJet1 + myGoodOnlineJet2;
+
+    //                         check_jet1_matching = true;
+    //                         check_jet2_matching = true;
+    //                         break;
+    //                       }
+    //                   }
+    //               }
+    //           }
+    //       }
+    //   }
+
+  // }
+
 // Check if a given event passes selections for the acceptance: offline + online + matching for all objects involved in VBF trigger
 void CheckVBF_vs_MuTau (TTree* inTree, UInt_t  i_ev, vector<array<Float_t, 4>> set_of_on_cuts, vector<array<Float_t, 4>> set_of_off_cuts, bool pass_MuTau, vector<UInt_t>* acceptance_VBF, vector<UInt_t>* acceptance_MuTau_VBF, TString JetIDType, TString Method, bool JetSel30)
   {
