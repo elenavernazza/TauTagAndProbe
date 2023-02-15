@@ -73,7 +73,7 @@ void PlotGain()
     
     TString EventSample = "MC_MiniAOD_VBFHHTo2B2Tau_14_02_23";
     TString Path_ntuples = "/grid_mnt/data__data.polcms/cms/vernazza/Ntuples/"+EventSample;
-    TString Output = "/grid_mnt/data__data.polcms/cms/vernazza/CMSSW_10_2_1/src/TauTagAndProbe/TauTagAndProbe/test/PlotGain_wrt_Mu18Tau24_PureRate/"+EventSample+"_GainPlots";
+    TString Output = "/grid_mnt/data__data.polcms/cms/vernazza/CMSSW_10_2_1/src/TauTagAndProbe/TauTagAndProbe/test/PlotGain_wrt_Mu18Tau24/"+EventSample+"_GainPlots";
     system("mkdir -p "+Output);
 
     cout << "\nReading events from :\n" << Path_ntuples << endl;
@@ -222,5 +222,6 @@ void PlotGain()
     cout << "Corresponding acceptance = " << Max_Acceptance << endl;
 
     PlotGain_2D_ptj1_mjj (30., 3., bins[0], xmin[0], xmax[0], bins[2], xmin[2], xmax[2], set_of_on_cuts, set_of_on_bins, acceptance_VBF, acceptance_MuTau_VBF, acceptance_MuTau, Output); // defined in ../Utils/CheckL1Triggers.h
+    PlotGain_2D_ptj1_mjj (30., 7., bins[0], xmin[0], xmax[0], bins[2], xmin[2], xmax[2], set_of_on_cuts, set_of_on_bins, acceptance_VBF, acceptance_MuTau_VBF, acceptance_MuTau, Output); // defined in ../Utils/CheckL1Triggers.h
 
   }
