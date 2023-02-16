@@ -64,7 +64,6 @@ void Rate()
     {
       if (i%100000 == 0) cout << "Analysing entry " << i << endl;
       inTree->GetEntry(i);
-      scale_lumi = scaleToLumi/thisLumiRun;
       ++Total;
 
       // at least 2 jets and one muon
