@@ -8,7 +8,8 @@
 #include <map>
 #include <string>
 #include <vector>
-#include <cstdlib>
+#include <cstdlib> 
+#include <cstring>  
 
 // for the ZeroBias sample 362616 we can look at this page
 // https://cmsoms.cern.ch/cms/runs/lumisection?cms_run=362616&cms_run_sequence=GLOBAL-RUN
@@ -18,6 +19,17 @@ using namespace std;
 
 void Rate()
 {
+
+  ULong64_t v_events[84] = { 206006627, 177670917, 175861870, 175394993, 232614668, 524787473, 639570227, 700505402, 325211142, 267082889, 218458730, \
+                          660053760, 680025275, 345808342, 298800791, 637233481, 724304890, 486436299, 511491518, 674997190, 325185999, 376187696, \
+                          692892160, 473916757, 475112445, 330563641, 517757622, 504700767, 208750421, 371351117, 774081902, 411536592, 716908008, \
+                          730337285, 466059424, 377602105, 698332779, 335953825, 337574840, 662608795, 538600619, 637644228, 183150718, 331539331, \
+                          713391613, 363858525, 593955846, 777970175, 461620678, 594933681, 593430504, 183762179, 222726465, 174996454, 771555726, \
+                          361902139, 360580557, 546497022, 646020636, 537261593, 584043008, 294782474, 295577408, 323402859, 382723269, 743556318, \
+                          675428368, 213221794, 216253377, 282969787, 320993378, 210603688, 666269100, 271763078, 702922893, 766406432, 456796034, \
+                          601219979, 600960634, 575772020, 419108697, 661379920, 363850694, 363690468 };
+
+  cout << v_events[0] << endl;
 
   Float_t Total = 0;
   Float_t Events_L1_DoubleJet_80_30_Mass_Min420_Mu8 = 0.;
@@ -62,7 +74,7 @@ void Rate()
   cout << "\nNumber of events in the Ntuple = " << inTree->GetEntries() << endl;
   for(UInt_t i = 0 ; i < inTree->GetEntries() ; ++i)
     {
-      if (i%100000 == 0) cout << "Analysing entry " << i << endl;
+      // if (i%100000 == 0) cout << "Analysing entry " << i << endl;
       inTree->GetEntry(i);
       ++Total;
 
@@ -85,6 +97,14 @@ void Rate()
             {
               if (in_l1tMuQual->at(good_BX).at(iMuon) < 4) continue; // open quality: 4, 5, 6, 7, 8, 9, 10, 11, 12,13, 14, 15
               myGoodOnlineMuon.SetPtEtaPhiM(in_l1tMuPt->at(good_BX).at(iMuon),in_l1tMuEta->at(good_BX).at(iMuon),in_l1tMuPhi->at(good_BX).at(iMuon),0.105);
+              for (int i_fired = 0; i_fired < 84; ++i_fired)
+                {
+                  if (in_EventNumber == v_events[i_fired])
+                    {
+                      if (myGoodOnlineMuon.Pt() >= 8) cout << "Found open muon" << endl;
+                      break;
+                    }
+                }
               break;
             }
 
@@ -114,9 +134,23 @@ void Rate()
                 }  
             }       
 
+          for (int i_fired = 0; i_fired < 84; ++i_fired)
+            {
+              if (in_EventNumber == v_events[i_fired])
+                {
+                  cout << in_EventNumber << " " << myGoodOnlineJet1.Pt() << " " << myGoodOnlineJet2.Pt() << " ";
+                  cout << myGoodOnlineDiJet.M() << " " << myGoodOnlineMuon.Pt();
+                  cout << " " << (myGoodOnlineJet1.Pt() >= 80) << " " << (myGoodOnlineJet2.Pt() >= 30) << " " << (myGoodOnlineDiJet.M() >= 420) << " " << (myGoodOnlineMuon.Pt() >= 8);
+                  break;
+                }
+            }
+
           if (myGoodOnlineJet1.Pt() >= 80 && myGoodOnlineJet2.Pt() >= 30 && myGoodOnlineDiJet.M() >= 420 && myGoodOnlineMuon.Pt() >= 8) 
             {
               Events_L1_DoubleJet_80_30_Mass_Min420_Mu8 += 1.;
+              cout << " passed" << endl;
+              // cout << in_EventNumber << " " << myGoodOnlineJet1.Pt() << " " << myGoodOnlineJet2.Pt() << " ";
+              // cout << myGoodOnlineDiJet.M() << " " << myGoodOnlineMuon.Pt() << endl;
             }
         }
     }
